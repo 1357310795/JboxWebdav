@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\JboxWebdav.Server.HttpListener\JboxWebdav.Server.HttpListener.csproj" />
+    <ProjectReference Include="..\JboxWebdav.Server\JboxWebdav.Server.csproj" />
+  </ItemGroup>
+
+</Project>

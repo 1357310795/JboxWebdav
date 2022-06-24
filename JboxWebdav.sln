@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32611.2
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JboxWebdav.Server", "JboxWebdav.Server\JboxWebdav.Server.csproj", "{A2DA5D20-8769-4955-B514-40EA19CAC028}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JboxWebdav.Server.HttpListener", "JboxWebdav.Server.HttpListener\JboxWebdav.Server.HttpListener.csproj", "{8C376F60-2AB3-4A3F-B49F-F5DA606165EE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JboxWebdav.ConsoleApp", "JboxWebdav.ConsoleApp\JboxWebdav.ConsoleApp.csproj", "{B095B143-2DE5-4EAA-9BBC-7BF2ED1761A6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A2DA5D20-8769-4955-B514-40EA19CAC028}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2DA5D20-8769-4955-B514-40EA19CAC028}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2DA5D20-8769-4955-B514-40EA19CAC028}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2DA5D20-8769-4955-B514-40EA19CAC028}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C376F60-2AB3-4A3F-B49F-F5DA606165EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C376F60-2AB3-4A3F-B49F-F5DA606165EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C376F60-2AB3-4A3F-B49F-F5DA606165EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C376F60-2AB3-4A3F-B49F-F5DA606165EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B095B143-2DE5-4EAA-9BBC-7BF2ED1761A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B095B143-2DE5-4EAA-9BBC-7BF2ED1761A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B095B143-2DE5-4EAA-9BBC-7BF2ED1761A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B095B143-2DE5-4EAA-9BBC-7BF2ED1761A6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {941AAC40-C330-4D38-9E80-041160BF4617}
+	EndGlobalSection
+EndGlobal
