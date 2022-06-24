@@ -11,18 +11,22 @@ using NWebDav.Server.Stores;
 
 using NWebDav.Sample.HttpListener.LogAdapters;
 using System.Diagnostics;
+using Jbox.Service;
+using NWebDav.Server.Helpers;
 
 namespace NWebDav.Sample.HttpListener
 {
     internal class Program
     {
+        public static WebDavDispatcher webDavDispatcher;
+
         private static async void DispatchHttpRequestsAsync(System.Net.HttpListener httpListener, CancellationToken cancellationToken)
         {
             // Create a request handler factory that uses basic authentication
             var requestHandlerFactory = new RequestHandlerFactory();
 
             // Create WebDAV dispatcher
-            var homeFolder = @"D:\Download";
+            var homeFolder = @"D:\BaiduNetdiskDownload";
             var webDavDispatcher = new WebDavDispatcher(new DiskStore(homeFolder), requestHandlerFactory);
 
             // Determine the WebDAV username/password for authorization
@@ -41,7 +45,7 @@ namespace NWebDav.Sample.HttpListener
                     // Determine the proper HTTP context
                     IHttpContext httpContext;
                     if (httpListenerContext.Request.IsAuthenticated)
-                        httpContext = new HttpBasicContext(httpListenerContext, checkIdentity: i => i.Name == webdavUsername && i.Password == webdavPassword);
+                        httpContext = new HttpBasicContext(httpListenerContext, checkJac);
                     else
                         httpContext = new HttpContext(httpListenerContext);
 
@@ -52,6 +56,55 @@ namespace NWebDav.Sample.HttpListener
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
+            }
+        }
+
+        private static async void DispatchHttpRequestsAsync1(System.Net.HttpListener httpListener, CancellationToken cancellationToken)
+        {
+            // Create a request handler factory that uses basic authentication
+            var requestHandlerFactory = new RequestHandlerFactory();
+
+            // Create WebDAV dispatcher
+            var homeFolder = @"D:\BaiduNetdiskDownload";
+            webDavDispatcher = new WebDavDispatcher(new DiskStore(homeFolder), requestHandlerFactory);
+
+            httpListener.BeginGetContext(new AsyncCallback(GetContextCallBack), httpListener);
+        }
+
+        private static async void GetContextCallBack(IAsyncResult ar)
+        {
+            try
+            {
+                System.Net.HttpListener httpListener = ar.AsyncState as System.Net.HttpListener;
+                if (httpListener.IsListening)
+                {
+                    HttpListenerContext httpListenerContext = httpListener.EndGetContext(ar);
+                    httpListener.BeginGetContext(new AsyncCallback(GetContextCallBack), httpListener);
+
+                    if (httpListenerContext == null)
+                        return;
+
+                    IHttpContext httpContext = null;
+                    try
+                    {
+                        httpContext = new HttpContext(httpListenerContext);
+                        //httpContext = new HttpBasicContext(httpListenerContext, checkJac);
+                    }
+                    catch(Exception ex)
+                    {
+                        httpContext = new HttpContext(httpListenerContext);
+                        httpContext.Response.SetStatus(DavStatusCode.Unauthorized);
+                        await httpContext.CloseAsync().ConfigureAwait(false);
+                        return;
+                    }
+                    
+                    // Dispatch the request
+                    await webDavDispatcher.DispatchRequestAsync(httpContext).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException(ex.Message);
             }
         }
 
@@ -71,7 +124,7 @@ namespace NWebDav.Sample.HttpListener
                 httpListener.Prefixes.Add($"{webdavProtocol}://{webdavIp}:{webdavPort}/");
 
                 // Use basic authentication if requested
-                var webdavUseAuthentication = false;
+                var webdavUseAuthentication = true;
                 if (webdavUseAuthentication)
                 {
                     // Check if HTTPS is enabled
@@ -93,7 +146,7 @@ namespace NWebDav.Sample.HttpListener
 
                 // Start dispatching requests
                 var cancellationTokenSource = new CancellationTokenSource();
-                DispatchHttpRequestsAsync(httpListener, cancellationTokenSource.Token);
+                DispatchHttpRequestsAsync1(httpListener, cancellationTokenSource.Token);
 
                 // Wait until somebody presses return
                 Console.WriteLine("WebDAV server running. Press 'x' to quit.");
@@ -101,6 +154,25 @@ namespace NWebDav.Sample.HttpListener
                 Console.ReadKey();
                 cancellationTokenSource.Cancel();
             }
+        }
+
+        private static Dictionary<string, JboxCookie> dic = new Dictionary<string, JboxCookie>();
+        private static bool checkJac(HttpListenerBasicIdentity identity)
+        {
+            if (dic.ContainsKey(identity.Name + identity.Password))
+            {
+                return true;
+            }
+            var res = Jac.Login(identity.Name, identity.Password);
+            Console.WriteLine(res.state);
+            Console.WriteLine(res.message);
+            if (res.state == Jac.LoginState.success)
+            {
+                dic.Add(identity.Name + identity.Password, res.cookie);
+                return true;
+            }
+            else
+                return false;
         }
     }
 }

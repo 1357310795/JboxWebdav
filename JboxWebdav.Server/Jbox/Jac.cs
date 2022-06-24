@@ -1,28 +1,14 @@
-﻿using AutoQiangke.Helpers;
-using AutoQiangke.Models;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using SixLabors.ImageSharp.Processing;
 using System.Net;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Windows;
 
-namespace AutoQiangke.Service
+namespace Jbox.Service
 {
     public static class Jac
     {
         public static string mycookie;
-        public static string finalJESSIONID, finalkc;
-        public static string xh_id;
-        public static string name;
+        public static string finalS, finalSESSID;
         public static bool islogin;
-
-        public static void Init()
-        {
-
-        }
 
         public static LoginResult Login(string jaccount, string password)
         {
@@ -30,19 +16,17 @@ namespace AutoQiangke.Service
             {
                 CookieContainer cc = new CookieContainer();
 
-                #region 1. /jaccountlogin
-                var url1 = BasicInfo.BaseUri + "/jaccountlogin";
+                #region 1. /oauth
+                var url1 = "https://jbox.sjtu.edu.cn/custom-sso-oauth/oauth/pclogin";
                 HttpWebRequest req1 = (HttpWebRequest)WebRequest.Create(url1);
                 AddCommonHeaders(req1);
 
                 HttpWebResponse resp1 = (HttpWebResponse)req1.GetResponse();
 
                 if (resp1.StatusCode != HttpStatusCode.Redirect)
-                    return new LoginResult(LoginState.fail, "1. /jaccountlogin 出错");
+                    return new LoginResult(LoginState.fail, "1. /oauth 出错");
 
                 string url2 = resp1.Headers["Location"];
-                cc.SetCookies(new Uri("https://" + req1.Host), resp1.Headers["Set-Cookie"]);
-
                 #endregion
 
                 #region 2. /oauth2/authorize
@@ -85,10 +69,10 @@ namespace AutoQiangke.Service
 
                 #region 4.5. Captcha-Resize
                 Stream outputstream = new MemoryStream();
-                using (var image = new SixLabors.ImageSharp.MagickImage(streamcaptcha))
+                using (var image = SixLabors.ImageSharp.Image.Load(streamcaptcha))
                 {
-                    image.Resize(new ImageMagick.MagickGeometry(100, 40) { IgnoreAspectRatio = true });
-                    image.Write(outputstream, ImageMagick.MagickFormat.Jpeg);
+                    image.Mutate(x => x.Resize(100, 40));
+                    image.Save(outputstream, new SixLabors.ImageSharp.Formats.Png.PngEncoder());
                     
                 }
                 outputstream.Position = 0;
@@ -284,39 +268,24 @@ namespace AutoQiangke.Service
                 string url8 = resp7.Headers["Location"];
                 #endregion
 
-                #region 9. /jaccountlogin
-                finalJESSIONID = Common.GetRandomString(32, true, false, true, false, "");
+                #region 9. /custom-sso-oauth/oauth/pclogin
                 HttpWebRequest req8 = (HttpWebRequest)WebRequest.Create(url8);
-                req8.Headers["cookie"] = "JSESSIONID=" + finalJESSIONID;
                 AddCommonHeaders(req8);
 
                 HttpWebResponse resp8 = (HttpWebResponse)req8.GetResponse();
                 if (!(resp8.StatusCode == HttpStatusCode.Redirect))
-                    return new LoginResult(LoginState.fail, "10. /jaccountlogin 错误");
+                    return new LoginResult(LoginState.fail, "9. /custom-sso-oauth/oauth/pclogin 错误");
                 string url9 = resp8.Headers["Location"];
-
+                if (url9 != "https://jbox.sjtu.edu.cn/view/login_client/new_client_login.html")
+                    return new LoginResult(LoginState.fail, "9. /custom-sso-oauth/oauth/pclogin 错误");
                 #endregion
 
-                #region 10. 再次/jaccountlogin
-                HttpWebRequest req9 = (HttpWebRequest)WebRequest.Create(url9);
-                req9.CookieContainer = cc;
-                AddCommonHeaders(req9);
-
-                HttpWebResponse resp9 = (HttpWebResponse)req9.GetResponse();
-                if (!(resp9.StatusCode == HttpStatusCode.Redirect))
-                    return new LoginResult(LoginState.fail, "11. 再次/jaccountlogin 错误");
-                string url10 = resp9.Headers["Location"];
-
-                #endregion
-
-                #region 11. 得到Cookie
-                if (url10 != "/xtgl/login_slogin.html")
-                    return new LoginResult(LoginState.fail, "系统错误！");
-
-                cc.SetCookies(new Uri("https://" + req9.Host), resp9.Headers["Set-Cookie"]);
-                finalJESSIONID = cc.GetCookies(new Uri("https://" + req9.Host))["JSESSIONID"].Value;
-                finalkc = cc.GetCookies(new Uri("https://" + req9.Host))["kc@" + BasicInfo.Host].Value;
-                mycookie = "JSESSIONID=" + finalJESSIONID + "; " + "kc@" + BasicInfo.Host + "=" + finalkc;
+                #region 10. 得到Cookie
+                cc.SetCookies(new Uri("https://" + req8.Host), resp8.Headers["Set-Cookie"]);
+                finalS = cc.GetCookies(new Uri("https://" + req8.Host))["S"].Value;
+                finalSESSID = cc.GetCookies(new Uri("https://" + req8.Host))["X-LENOVO-SESS-ID"].Value;
+                mycookie = "S=" + finalS + "; " + "X-LENOVO-SESS-ID=" + finalSESSID;
+                //set-cookie: X-LENOVO-SESS-ID=1f658f335cff451daff90f8546ec2e5a; Path=/
                 #endregion
             }
             catch (Exception ex)
@@ -329,7 +298,7 @@ namespace AutoQiangke.Service
 
         public static bool ValidateLogin()
         {
-            var url = BasicInfo.BaseUri + "/xtgl/index_initMenu.html";
+            var url = "https://jbox.sjtu.edu.cn/view/login_client/new_client_login.html";
             HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
             req.Method = "GET";
             AddCommonHeaders(req);
@@ -344,33 +313,12 @@ namespace AutoQiangke.Service
                 if (!body.success)
                     return false;
 
-                var nameregex = new Regex(@"(?<=<img src=""/zftal-ui-.+/assets/images/user_logo\.jpg"" width="".+"" height="".+""><span><font color=""white"">&nbsp;).+(?=</font></span>)");
-                var nameregexresult = nameregex.Match(body.result);
-                if (nameregexresult != null)
-                    name = nameregexresult.Value;
-
-                var xhregex = new Regex(@"(?<=<input type=""hidden"" id=""sessionUserKey"" value="")[0-9]*(?="" />)");
-                var xhregexresult = xhregex.Match(body.result);
-                if (xhregexresult != null)
-                    xh_id = xhregexresult.Value;
-
                 return true;
             }
             catch //(Exception ex)
             {
                 return false;
             }
-        }
-
-        public static bool TryLastCookie()
-        {
-            mycookie = IniHelper.GetKeyValue("Login", "LastCookie", "", IniHelper.inipath);
-            islogin = ValidateLogin();
-            if (islogin)
-            {
-                Application.Current.Resources["stuname"] = "已登录：" + name;
-            }
-            return islogin;
         }
 
         public static void AddCommonHeaders(HttpWebRequest req)
@@ -400,19 +348,41 @@ namespace AutoQiangke.Service
         public class LoginResult
         {
             public LoginState state;
-            public string result;
+            public string message;
+            public JboxCookie cookie;
 
             public LoginResult() { }
+            public LoginResult(LoginState state, string result, JboxCookie cookie)
+            {
+                this.state = state;
+                this.message = result;
+                this.cookie = cookie;
+            }
+
             public LoginResult(LoginState state, string result)
             {
                 this.state = state;
-                this.result = result;
+                this.message = result;
+                this.cookie = null;
             }
         }
 
         public enum LoginState
         {
             success, fail, captchafail
+        }
+    }
+
+    public class JboxCookie
+    {
+        public string mycookie;
+        public string S, SESSID;
+
+        public JboxCookie(string s, string sESSID)
+        {
+            S = s;
+            SESSID = sESSID;
+            mycookie = "S=" + S + "; " + "X-LENOVO-SESS-ID=" + SESSID;
         }
     }
 }
