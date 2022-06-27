@@ -28,7 +28,7 @@ namespace NWebDav.Server.Stores
         public Task<IStoreItem> GetItemAsync(Uri uri, IHttpContext httpContext)
         {
             // Determine the path from the uri
-            var path = GetPathFromUri(uri);
+            var path = UriHelper.GetPathFromUri(uri);
 
             var res = JboxService.GetJboxItemInfo(path);
             
@@ -53,7 +53,7 @@ namespace NWebDav.Server.Stores
         public Task<IStoreCollection> GetCollectionAsync(Uri uri, IHttpContext httpContext)
         {
             // Determine the path from the uri
-            var path = GetPathFromUri(uri);
+            var path = UriHelper.GetPathFromUri(uri);
 
             var res = JboxService.GetJboxItemInfo(path);
 
@@ -67,13 +67,6 @@ namespace NWebDav.Server.Stores
             return Task.FromResult<IStoreCollection>(new JboxStoreCollection(LockingManager, res.ToJboxDirectoryInfo(), IsWritable));
         }
 
-        private string GetPathFromUri(Uri uri)
-        {
-            // Determine the path
-            var requestedPath = UriHelper.GetDecodedPath(uri);
-
-            // Return the combined path
-            return requestedPath;
-        }
+        
     }
 }

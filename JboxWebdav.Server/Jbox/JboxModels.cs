@@ -1,4 +1,6 @@
 ﻿using Newtonsoft.Json;
+using NWebDav.Server.Logging;
+using NWebDav.Server;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -141,6 +143,8 @@ namespace JboxWebdav.Server.Jbox
 
     public class JboxDirectoryInfo
     {
+        private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(JboxDirectoryInfo));
+
         #region Json Properties
         [JsonProperty("access_mode")]
         public long AccessMode { get; set; }
@@ -260,7 +264,11 @@ namespace JboxWebdav.Server.Jbox
         public bool IsDetailed = true;
         internal string GetName()
         {
-            return Path.Substring(Path.LastIndexOf("/") + 1);
+            var tmp = Path.Last()=='/' ? Path.Substring(0, Path.Length - 1) : Path;
+            //s_log.Log(LogLevel.Info,()=> tmp.Substring(tmp.LastIndexOf("/") + 1));
+            return tmp.Substring(tmp.LastIndexOf("/") + 1);
+            //return "tmptmpt";
+
         }
 
         public int DirectoryCount { 

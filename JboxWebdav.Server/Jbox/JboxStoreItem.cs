@@ -67,15 +67,15 @@ namespace NWebDav.Server.Stores
             },
 
             // Default locking property handling via the LockingManager
-            new DavLockDiscoveryDefault<JboxStoreItem>(),
+            //new DavLockDiscoveryDefault<JboxStoreItem>(),
             new DavSupportedLockDefault<JboxStoreItem>(),
 
             // Hopmann/Lippert collection properties
             // (although not a collection, the IsHidden property might be valuable)
-            new DavExtCollectionIsHidden<JboxStoreItem>
-            {
-                Getter = (context, item) => (item._fileInfo.IsDisplay)
-            },
+            //new DavExtCollectionIsHidden<JboxStoreItem>
+            //{
+            //    Getter = (context, item) => (item._fileInfo.IsDisplay)
+            //},
 
             // Win32 extensions
             //new Win32CreationTime<JboxStoreItem>
@@ -177,7 +177,7 @@ namespace NWebDav.Server.Stores
 
         private string CalculateEtag()
         {
-            return _fileInfo.Hash;
+            return "\"" + _fileInfo.Hash + "\"";
         }
     }
 }

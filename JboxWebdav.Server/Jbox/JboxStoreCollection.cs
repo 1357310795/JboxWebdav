@@ -56,47 +56,47 @@ namespace NWebDav.Server.Stores
             },
 
             // Default locking property handling via the LockingManager
-            new DavLockDiscoveryDefault<JboxStoreCollection>(),
+            //new DavLockDiscoveryDefault<JboxStoreCollection>(),
             new DavSupportedLockDefault<JboxStoreCollection>(),
 
             // Hopmann/Lippert collection properties
-            new DavExtCollectionChildCount<JboxStoreCollection>
-            {
-                Getter = (context, collection) => collection._directoryInfo.ItemCount
-            },
-            new DavExtCollectionIsFolder<JboxStoreCollection>
-            {
-                Getter = (context, collection) => true
-            },
-            new DavExtCollectionIsHidden<JboxStoreCollection>
-            {
-                Getter = (context, collection) => (collection._directoryInfo.IsDisplay)
-            },
-            new DavExtCollectionIsStructuredDocument<JboxStoreCollection>
-            {
-                Getter = (context, collection) => false
-            },
-            new DavExtCollectionHasSubs<JboxStoreCollection>
-            {
-                Getter = (context, collection) => (collection._directoryInfo.DirectoryCount > 0)
-            },
-            new DavExtCollectionNoSubs<JboxStoreCollection>
-            {
-                Getter = (context, collection) => false
-            },
-            new DavExtCollectionObjectCount<JboxStoreCollection>
-            {
-                Getter = (context, collection) => collection._directoryInfo.FileCount
-            },
-            new DavExtCollectionReserved<JboxStoreCollection>
-            {
-                Getter = (context, collection) => !collection.IsWritable
-            },
-            new DavExtCollectionVisibleCount<JboxStoreCollection>
-            {
-                Getter = (context, collection) =>
-                    collection._directoryInfo.VisibleCount
-            },
+            //new DavExtCollectionChildCount<JboxStoreCollection>
+            //{
+            //    Getter = (context, collection) => collection._directoryInfo.ItemCount
+            //},
+            //new DavExtCollectionIsFolder<JboxStoreCollection>
+            //{
+            //    Getter = (context, collection) => true
+            //},
+            //new DavExtCollectionIsHidden<JboxStoreCollection>
+            //{
+            //    Getter = (context, collection) => (collection._directoryInfo.IsDisplay)
+            //},
+            //new DavExtCollectionIsStructuredDocument<JboxStoreCollection>
+            //{
+            //    Getter = (context, collection) => false
+            //},
+            //new DavExtCollectionHasSubs<JboxStoreCollection>
+            //{
+            //    Getter = (context, collection) => (collection._directoryInfo.DirectoryCount > 0)
+            //},
+            //new DavExtCollectionNoSubs<JboxStoreCollection>
+            //{
+            //    Getter = (context, collection) => false
+            //},
+            //new DavExtCollectionObjectCount<JboxStoreCollection>
+            //{
+            //    Getter = (context, collection) => collection._directoryInfo.FileCount
+            //},
+            //new DavExtCollectionReserved<JboxStoreCollection>
+            //{
+            //    Getter = (context, collection) => !collection.IsWritable
+            //},
+            //new DavExtCollectionVisibleCount<JboxStoreCollection>
+            //{
+            //    Getter = (context, collection) =>
+            //        collection._directoryInfo.VisibleCount
+            //},
 
             // Win32 extensions
             //new Win32CreationTime<JboxStoreCollection>
@@ -421,7 +421,7 @@ namespace NWebDav.Server.Stores
             throw new NotImplementedException("Not Supported");
         }
 
-        public InfiniteDepthMode InfiniteDepthMode => InfiniteDepthMode.Assume0;
+        public InfiniteDepthMode InfiniteDepthMode => InfiniteDepthMode.Assume1;
 
         public override int GetHashCode()
         {

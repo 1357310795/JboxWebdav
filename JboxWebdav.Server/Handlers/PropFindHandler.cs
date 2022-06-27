@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-
+using JboxWebdav.Server.Jbox;
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Logging;
@@ -121,7 +121,7 @@ namespace NWebDav.Server.Handlers
             {
                 // Create the property
                 var xResponse = new XElement(WebDavNamespaces.DavNs + "response",
-                    new XElement(WebDavNamespaces.DavNs + "href", UriHelper.ToEncodedString(entry.Uri)));
+                    new XElement(WebDavNamespaces.DavNs + "href", UriHelper.GetPathFromUri(entry.Uri).UrlEncodeByParts()));
 
                 // Create tags for property values
                 var xPropStatValues = new XElement(WebDavNamespaces.DavNs + "propstat");

@@ -16,12 +16,19 @@ namespace JboxWebdav.Server.Jbox
         public static string Connect(this IEnumerable<string> iterator,string separator)
         {
             StringBuilder s = new StringBuilder();
-            foreach (var i in iterator)
+            var it =iterator.GetEnumerator();
+            it.MoveNext();
+            bool next;
+            do
             {
-                s.Append(i);
-                if (i != iterator.Last())
+                
+                s.Append(it.Current);
+                next = it.MoveNext();
+                if (next)
                     s.Append(separator);
-            }
+
+            } while (next);
+
             return s.ToString();
         }
 
