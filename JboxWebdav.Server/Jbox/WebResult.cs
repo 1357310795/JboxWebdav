@@ -1,25 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Jbox.Models
 {
-    public static class WebResult
+    public class WebResult : CommonResult
     {
-        public class PostResult : CommonResult
-        {
-            public PostResult(bool success, string result) : base(success, result)
-            {
-            }
-        }
+        public HttpStatusCode? code;
 
-        public class GetResult : CommonResult
+        public WebResult(HttpStatusCode? code, bool success, string result)
         {
-            public GetResult(bool success, string result) : base(success, result)
-            {
-            }
+            this.code = code;
+            this.success = success;
+            this.result = result;
         }
     }
 }

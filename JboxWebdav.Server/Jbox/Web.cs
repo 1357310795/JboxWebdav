@@ -1,4 +1,5 @@
 ﻿using Jbox.Models;
+using JboxWebdav.Server.Jbox;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,7 +14,64 @@ namespace Jbox.Service
 {
     public static class Web
     {
-        public static CommonResult Post(string url, Dictionary<string, string> headers, Dictionary<string, string> formdata, bool urlencode)
+        public static WebResult Post(string url, Dictionary<string, string> queryparas, Dictionary<string, string> headers, string formdata, bool urlencode)
+        {
+            StringBuilder builder1 = new StringBuilder();
+            builder1.Append(url);
+
+            if (queryparas.Count > 0)
+            {
+                builder1.Append("?");
+                int i = 0;
+                foreach (var item in queryparas)
+                {
+                    if (i > 0)
+                        builder1.Append("&");
+                    builder1.AppendFormat("{0}={1}", item.Key, item.Value);
+                    i++;
+                }
+            }
+
+            StringBuilder builder2 = new StringBuilder();
+
+            return Post(builder1.ToString(), headers, formdata, urlencode);
+        }
+
+        public static WebResult Post(string url, Dictionary<string, string> queryparas, Dictionary<string, string> headers, Dictionary<string, string> formdata, bool urlencode)
+        {
+            StringBuilder builder1 = new StringBuilder();
+            builder1.Append(url);
+            
+            if (queryparas.Count > 0)
+            {
+                builder1.Append("?");
+                int i = 0;
+                foreach (var item in queryparas)
+                {
+                    if (i > 0)
+                        builder1.Append("&");
+                    builder1.AppendFormat("{0}={1}", item.Key, item.Value);
+                    i++;
+                }
+            }
+
+            StringBuilder builder2 = new StringBuilder();
+            if (formdata.Count > 0)
+            {
+                int i = 0;
+                foreach (var item in formdata)
+                {
+                    if (i > 0)
+                        builder2.Append("&");
+                    builder2.AppendFormat("{0}={1}", item.Key, urlencode ? item.Value.UrlEncode(): item.Value);
+                    i++;
+                }
+            }
+
+            return Post(builder1.ToString(), headers, builder2.ToString(), urlencode);
+        }
+
+        public static WebResult Post(string url, Dictionary<string, string> headers, Dictionary<string, string> formdata, bool urlencode)
         {
             #region 构造表单数据
             StringBuilder builder = new StringBuilder();
@@ -24,86 +82,105 @@ namespace Jbox.Service
                 {
                     if (i > 0)
                         builder.Append("&");
-                    builder.AppendFormat("{0}={1}", item.Key, item.Value);
+                    builder.AppendFormat("{0}={1}", item.Key, urlencode ? item.Value.UrlEncode() : item.Value);
                     i++;
                 }
             }
             #endregion
 
-            #region 初始化请求
-            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
-            req.Method = "POST";
-            if (headers.ContainsKey("Accept"))
-            {
-                req.Accept = headers["Accept"];
-                headers.Remove("Accept");
-            }
-            if (headers.ContainsKey("UserAgent"))
-            {
-                req.Accept = headers["UserAgent"];
-                headers.Remove("UserAgent");
-            }
-            if (headers.ContainsKey("Referer"))
-            {
-                req.Accept = headers["Referer"];
-                headers.Remove("Referer");
-            }
-            if (headers.ContainsKey("Connection") && headers["Connection"] == "keep-alive")
-            {
-                req.KeepAlive = true;
-                headers.Remove("Connection");
-            }
-            if (headers.ContainsKey("Origin"))
-            {
-                req.Accept = headers["Origin"];
-                headers.Remove("Origin");
-            }
-            if (headers.ContainsKey("Host"))
-            {
-                headers.Remove("Host");
-            }
-            if (headers.ContainsKey("Content-Length"))
-            {
-                headers.Remove("Content-Length");
-            }
-            if (headers.ContainsKey("Cache-Control"))
-            {
-                headers.Remove("Cache-Control");
-            }
-            foreach (var i in headers)
-            {
-                req.Headers[i.Key] = i.Value;
-            }
-            #endregion
-
-            #region 添加Post 参数
-
-            byte[] data = urlencode ? System.Web.HttpUtility.UrlEncodeToBytes(builder.ToString()) : Encoding.Default.GetBytes(builder.ToString());
-            req.ContentLength = data.Length;
-            using (Stream reqStream = req.GetRequestStream())
-            {
-                reqStream.Write(data, 0, data.Length);
-                reqStream.Close();
-            }
-            #endregion
-
-            try
-            {
-                HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
-                Stream stream = resp.GetResponseStream();
-                return GetResponseBody(resp, stream);
-            }
-            catch (Exception ex)
-            {
-                return new CommonResult(false, ex.ToString());
-            }
+            return Post(url, headers, builder.ToString(), urlencode);
         }
 
-        public static CommonResult Post(string url, Dictionary<string, string> headers, string formdata, bool urlencode)
+        public static WebResult Post(string url, Dictionary<string, string> headers, string formdata, bool urlencode)
+        {
+            return Post(url, headers, formdata, urlencode, Encoding.Default);
+        }
+
+        public static WebResult Post(string url, Dictionary<string, string> headers, string formdata, bool urlencode, Encoding eco)
         {
             #region 初始化请求
             HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
             req.Method = "POST";
+            ProcessHeaders(headers, req);
+            #endregion
+
+            #region 添加Post 参数
+            try
+            {
+                byte[] data = eco.GetBytes(formdata);
+                req.ContentLength = data.Length;
+                using (Stream reqStream = req.GetRequestStream())
+                {
+                    reqStream.Write(data, 0, data.Length);
+                    reqStream.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                return new WebResult(null, false, ex.ToString());
+            }
+            #endregion
+
+            #region 获取响应
+            try
+            {
+                HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
+                Stream stream = resp.GetResponseStream();
+                return GetResponseBody(resp.StatusCode, resp, stream);
+            }
+            catch (Exception ex)
+            {
+                return new WebResult(null, false, ex.ToString());
+            }
+            #endregion
+        }
+
+        public static WebResult Post(string url, Dictionary<string, string> headers, string formdata, Encoding eco)
+        {
+            return Post(url, headers, formdata, false, eco);
+        }
+
+        public static WebResult Post(string url, Dictionary<string, string> headers, Stream datastream)
+        {
+            #region 初始化请求
+            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
+            req.Method = "POST";
+            ProcessHeaders(headers, req);
+            #endregion
+
+            req.ContentLength = datastream.Length;
+
+            #region 输入二进制流
+            if (datastream != null)
+            {
+                datastream.Position = 0;
+                Stream requestStream = req.GetRequestStream();
+                byte[] buffer = new byte[1024];
+                int bytesRead = 0;
+                while ((bytesRead = datastream.Read(buffer, 0, buffer.Length)) != 0)
+                {
+                    requestStream.Write(buffer, 0, bytesRead);
+                }
+                datastream.Close();
+            }
+            #endregion
+
+            #region 获取响应
+            try
+            {
+                HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
+                Stream stream = resp.GetResponseStream();
+                return GetResponseBody(resp.StatusCode, resp, stream);
+            }
+            catch (Exception ex)
+            {
+                return new WebResult(null, false, ex.ToString());
+            }
+            #endregion
+        }
+
+        public static void ProcessHeaders(Dictionary<string, string> headers, HttpWebRequest req)
+        {
             if (headers.ContainsKey("Accept"))
             {
                 req.Accept = headers["Accept"];
@@ -145,99 +222,44 @@ namespace Jbox.Service
             {
                 req.Headers[i.Key] = i.Value;
             }
-            #endregion
-
-            #region 添加Post 参数
-
-            byte[] data = urlencode ? System.Web.HttpUtility.UrlEncodeToBytes(formdata) : Encoding.Default.GetBytes(formdata);
-            req.ContentLength = data.Length;
-            using (Stream reqStream = req.GetRequestStream())
-            {
-                reqStream.Write(data, 0, data.Length);
-                reqStream.Close();
-            }
-            #endregion
-
-            //获取响应
-            try
-            {
-                HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
-                Stream stream = resp.GetResponseStream();
-                return GetResponseBody(resp, stream);
-            }
-            catch (Exception ex)
-            {
-                return new CommonResult(false, ex.ToString());
-            }
         }
 
-        public static CommonResult Get(string url, Dictionary<string, string> headers)
+        public static WebResult Get(string url, Dictionary<string, string> headers)
         {
             HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
             req.Method = "GET";
-            if (headers.ContainsKey("Accept"))
-            {
-                req.Accept = headers["Accept"];
-                headers.Remove("Accept");
-            }
-            if (headers.ContainsKey("User-Agent"))
-            {
-                req.UserAgent = headers["User-Agent"];
-                headers.Remove("User-Agent");
-            }
-            if (headers.ContainsKey("Referer"))
-            {
-                req.Referer = headers["Referer"];
-                headers.Remove("Referer");
-            }
-            if (headers.ContainsKey("Connection") && headers["Connection"] == "keep-alive")
-            {
-                req.KeepAlive = true;
-                headers.Remove("Connection");
-            }
-            if (headers.ContainsKey("Content-Type"))
-            {
-                req.ContentType = headers["Content-Type"];
-                headers.Remove("Content-Type");
-            }
-            if (headers.ContainsKey("Host"))
-            {
-                headers.Remove("Host");
-            }
-            if (headers.ContainsKey("Content-Length"))
-            {
-                headers.Remove("Content-Length");
-            }
-            if (headers.ContainsKey("Cache-Control"))
-            {
-                headers.Remove("Cache-Control");
-            }
-            foreach (var i in headers)
-            {
-                req.Headers[i.Key] = i.Value;
-            }
+            ProcessHeaders(headers, req);
 
             try
             {
                 HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
                 Stream stream = resp.GetResponseStream();
-                return GetResponseBody(resp, stream);
+                return GetResponseBody(resp.StatusCode, resp, stream);
             }
             catch (Exception ex)
             {
-                return new CommonResult(false, ex.ToString());
+                return new WebResult(null, false, ex.ToString());
             }
         }
 
-        public static CommonResult GetResponseBody(HttpWebResponse resp, Stream stream)
+        public static WebResult GetResponseBody(HttpStatusCode code, HttpWebResponse resp, Stream stream)
         {
             string result;
             //获取响应内容
-            if (resp.ContentEncoding != null && resp.ContentEncoding.ToLower() == "gzip") 
+            if (resp.ContentEncoding != null && resp.ContentEncoding.ToLower() == "gzip")
             {
                 GZipStream gzip = new GZipStream(stream, CompressionMode.Decompress);
                 //对解压缩后的字符串信息解析
                 using (StreamReader reader = new StreamReader(gzip, Encoding.UTF8))//中文编码处理
+                {
+                    result = reader.ReadToEnd();
+                }
+            }
+            else if (resp.ContentEncoding != null && resp.ContentEncoding.ToLower() == "br")
+            {
+                BrotliStream br = new BrotliStream(stream, CompressionMode.Decompress);
+                //对解压缩后的字符串信息解析
+                using (StreamReader reader = new StreamReader(br, Encoding.UTF8))//中文编码处理
                 {
                     result = reader.ReadToEnd();
                 }
@@ -249,7 +271,7 @@ namespace Jbox.Service
                     result = reader.ReadToEnd();
                 }
             }
-            return new CommonResult(true, result);
+            return new WebResult(code, true, result);
         }
 
         public static Dictionary<string, string> PostCommonHeaders()
@@ -260,19 +282,13 @@ namespace Jbox.Service
             d.Add("Accept-Language", "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7");
             d.Add("Cache-Control", "no-cache");
             d.Add("Connection", "keep-alive");
-            d.Add("Content-Length", "429");
             d.Add("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-            d.Add("Cookie", Jac.mycookie);
             d.Add("Pragma", "no-cache");
-            d.Add("sec-ch-ua", "\"Chromium\";v=\"94\", \"Microsoft Edge\";v=\"94\", \"; Not A Brand\";v=\"99\"");
-            d.Add("sec-ch-ua-mobile", "?0");
-            d.Add("sec-ch-ua-platform", "\"Windows\"");
-            d.Add("Sec-Fetch-Dest", "empty");
-            d.Add("Sec-Fetch-Mode", "cors");
-            d.Add("Sec-Fetch-Site", "same-origin");
-            d.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.9 Safari/537.36");
+            d.Add("Referer", "");
+            d.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/82.0.3202.9 Safari/537.36");
             d.Add("X-Requested-With", "XMLHttpRequest");
             return d;
         }
     }
+
 }

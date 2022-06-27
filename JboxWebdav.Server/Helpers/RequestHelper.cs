@@ -45,7 +45,7 @@ namespace NWebDav.Server.Helpers
         /// <summary>
         /// Optional conditional date/time.
         /// </summary>
-        public DateTime If {get; set; }
+        public DateTime? If {get; set; }
     }
 
     /// <summary>

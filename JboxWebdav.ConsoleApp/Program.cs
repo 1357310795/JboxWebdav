@@ -27,12 +27,7 @@ namespace NWebDav.Sample.HttpListener
 
             // Create WebDAV dispatcher
             var homeFolder = @"D:\BaiduNetdiskDownload";
-            var webDavDispatcher = new WebDavDispatcher(new DiskStore(homeFolder), requestHandlerFactory);
-
-            // Determine the WebDAV username/password for authorization
-            // (only when basic authentication is enabled)
-            var webdavUsername =  "test";
-            var webdavPassword =  "test";
+            var webDavDispatcher = new WebDavDispatcher(new JboxStore(), requestHandlerFactory);
 
             HttpListenerContext httpListenerContext;
             try
@@ -45,7 +40,7 @@ namespace NWebDav.Sample.HttpListener
                     // Determine the proper HTTP context
                     IHttpContext httpContext;
                     if (httpListenerContext.Request.IsAuthenticated)
-                        httpContext = new HttpBasicContext(httpListenerContext, checkJac);
+                        httpContext = new HttpBasicContext(httpListenerContext, Jac.checkJac);
                     else
                         httpContext = new HttpContext(httpListenerContext);
 
@@ -66,7 +61,8 @@ namespace NWebDav.Sample.HttpListener
 
             // Create WebDAV dispatcher
             var homeFolder = @"D:\BaiduNetdiskDownload";
-            webDavDispatcher = new WebDavDispatcher(new DiskStore(homeFolder), requestHandlerFactory);
+            //webDavDispatcher = new WebDavDispatcher(new DiskStore(homeFolder), requestHandlerFactory);
+            webDavDispatcher = new WebDavDispatcher(new JboxStore(), requestHandlerFactory);
 
             httpListener.BeginGetContext(new AsyncCallback(GetContextCallBack), httpListener);
         }
@@ -87,8 +83,8 @@ namespace NWebDav.Sample.HttpListener
                     IHttpContext httpContext = null;
                     try
                     {
-                        httpContext = new HttpContext(httpListenerContext);
-                        //httpContext = new HttpBasicContext(httpListenerContext, checkJac);
+                        //httpContext = new HttpContext(httpListenerContext);
+                        httpContext = new HttpBasicContext(httpListenerContext, Jac.checkJac);
                     }
                     catch(Exception ex)
                     {
@@ -156,23 +152,6 @@ namespace NWebDav.Sample.HttpListener
             }
         }
 
-        private static Dictionary<string, JboxCookie> dic = new Dictionary<string, JboxCookie>();
-        private static bool checkJac(HttpListenerBasicIdentity identity)
-        {
-            if (dic.ContainsKey(identity.Name + identity.Password))
-            {
-                return true;
-            }
-            var res = Jac.Login(identity.Name, identity.Password);
-            Console.WriteLine(res.state);
-            Console.WriteLine(res.message);
-            if (res.state == Jac.LoginState.success)
-            {
-                dic.Add(identity.Name + identity.Password, res.cookie);
-                return true;
-            }
-            else
-                return false;
-        }
+        
     }
 }

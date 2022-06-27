@@ -1,4 +1,6 @@
-﻿using SixLabors.ImageSharp.Processing;
+﻿using JboxWebdav.Server.Jbox;
+using Newtonsoft.Json;
+using SixLabors.ImageSharp.Processing;
 using System.Net;
 using System.Text;
 
@@ -9,6 +11,27 @@ namespace Jbox.Service
         public static string mycookie;
         public static string finalS, finalSESSID;
         public static bool islogin;
+        public static JboxUserInfo userInfo;
+
+        private static Dictionary<string, JboxCookie> dic = new Dictionary<string, JboxCookie>();
+        public static bool checkJac(HttpListenerBasicIdentity identity)
+        {
+            if (dic.ContainsKey(identity.Name + identity.Password))
+            {
+                return true;
+            }
+            var res = Jac.Login(identity.Name, identity.Password);
+            Console.WriteLine(res.state);
+            Console.WriteLine(res.message);
+            if (res.state != Jac.LoginState.success)
+                return false;
+            var res2 = Jac.ValidateLogin();
+            if (!res2)
+                return false;
+
+            dic.Add(identity.Name + identity.Password, res.cookie);
+            return true;
+        }
 
         public static LoginResult Login(string jaccount, string password)
         {
@@ -237,7 +260,7 @@ namespace Jbox.Service
 
                 if (resp6.StatusCode == HttpStatusCode.OK)
                 {
-                    var body = Web.GetResponseBody(resp6, resp6.GetResponseStream());
+                    var body = Web.GetResponseBody(resp6.StatusCode, resp6, resp6.GetResponseStream());
                     if (body.success)
                     {
                         if (body.result.Contains("请正确填写你的用户名和密码"))
@@ -298,20 +321,21 @@ namespace Jbox.Service
 
         public static bool ValidateLogin()
         {
-            var url = "https://jbox.sjtu.edu.cn/view/login_client/new_client_login.html";
+            var url = "https://jbox.sjtu.edu.cn/v2/user/info/get?S=" + finalS;
             HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
             req.Method = "GET";
-            AddCommonHeaders(req);
             req.Timeout = 5000;
             req.Headers["Cookie"] = mycookie;
+            req.UserAgent = "LDClientWin_6.2.0.36_Microsoft Windows 10 Ver10.0_64";
             try
             {
                 HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
                 if (resp.StatusCode != HttpStatusCode.OK)
                     return false;
-                var body = Web.GetResponseBody(resp, resp.GetResponseStream());
+                var body = Web.GetResponseBody(resp.StatusCode, resp, resp.GetResponseStream());
                 if (!body.success)
                     return false;
+                userInfo = JsonConvert.DeserializeObject<JboxUserInfo>(body.result);
 
                 return true;
             }
