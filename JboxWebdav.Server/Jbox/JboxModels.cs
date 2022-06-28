@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reflection.Metadata;
 
 namespace JboxWebdav.Server.Jbox
 {
@@ -653,6 +654,104 @@ namespace JboxWebdav.Server.Jbox
                 LockUid = LockUid,
                 MimeType = MimeType,
                 Hash = Hash
+            };
+        }
+    }
+
+    public class JboxCreateDirInfo
+    {
+        #region Json Properties
+        [JsonProperty("access_mode")]
+        public string AccessMode { get; set; }
+
+        [JsonProperty("authable")]
+        public string Authable { get; set; }
+
+        [JsonProperty("bytes")]
+        public string Bytes { get; set; }
+
+        [JsonProperty("creator")]
+        public string Creator { get; set; }
+
+        [JsonProperty("creator_uid")]
+        public long CreatorUid { get; set; }
+
+        [JsonProperty("delivery_code")]
+        public string DeliveryCode { get; set; }
+
+        [JsonProperty("desc")]
+        public string Desc { get; set; }
+
+        [JsonProperty("from")]
+        public string From { get; set; }
+
+        [JsonProperty("from_name")]
+        public string FromName { get; set; }
+
+        [JsonProperty("hash")]
+        public string Hash { get; set; }
+
+        [JsonProperty("is_deleted")]
+        public bool IsDeleted { get; set; }
+
+        [JsonProperty("is_dir")]
+        public bool IsDir { get; set; }
+
+        [JsonProperty("is_shared")]
+        public bool IsShared { get; set; }
+
+        [JsonProperty("is_team")]
+        public bool IsTeam { get; set; }
+
+        [JsonProperty("modified")]
+        public long Modified { get; set; }
+
+        [JsonProperty("neid")]
+        public string Neid { get; set; }
+
+        [JsonProperty("nsid")]
+        public long Nsid { get; set; }
+
+        [JsonProperty("path")]
+        public string Path { get; set; }
+
+        [JsonProperty("path_type")]
+        public string PathType { get; set; }
+
+        [JsonProperty("pid")]
+        public string Pid { get; set; }
+
+        [JsonProperty("result")]
+        public string Result { get; set; }
+
+        [JsonProperty("share_to_personal")]
+        public bool ShareToPersonal { get; set; }
+
+        [JsonProperty("size")]
+        public long Size { get; set; }
+
+        [JsonProperty("updator")]
+        public string Updator { get; set; }
+
+        [JsonProperty("updator_uid")]
+        public long UpdatorUid { get; set; }
+        #endregion
+        public bool success
+        {
+            get
+            {
+                return Result == "success";
+            }
+        }
+
+        internal JboxDirectoryInfo ToJboxDirectoryInfo()
+        {
+            return new JboxDirectoryInfo()
+            {
+                IsTeam = IsTeam,
+                Path = Path,
+                IsDeleted = IsDeleted,
+                Modified = new DateTime(1970, 1, 1, 0, 0, 0, 0) + TimeSpan.FromMilliseconds(Modified),
             };
         }
     }

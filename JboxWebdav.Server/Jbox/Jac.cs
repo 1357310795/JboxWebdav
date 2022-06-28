@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using SixLabors.ImageSharp.Processing;
 using System.Net;
+using System.Security.Principal;
 using System.Text;
 
 namespace Jbox.Service
@@ -12,11 +13,14 @@ namespace Jbox.Service
         public static string finalS, finalSESSID;
         public static bool islogin;
         public static JboxUserInfo userInfo;
+        public static string configpath = Environment.GetEnvironmentVariable("LocalAppData") + "\\JboxWebdav\\";
+
 
         private static Dictionary<string, JboxCookie> dic = new Dictionary<string, JboxCookie>();
+
         public static bool checkJac(HttpListenerBasicIdentity identity)
         {
-            if (dic.ContainsKey(identity.Name + identity.Password))
+            if (islogin)
             {
                 return true;
             }
@@ -25,15 +29,11 @@ namespace Jbox.Service
             Console.WriteLine(res.message);
             if (res.state != Jac.LoginState.success)
                 return false;
-            var res2 = Jac.ValidateLogin();
-            if (!res2)
-                return false;
 
-            dic.Add(identity.Name + identity.Password, res.cookie);
             return true;
         }
 
-        public static LoginResult Login(string jaccount, string password)
+        public static LoginResult OneLogin(string jaccount, string password)
         {
             try
             {
@@ -308,6 +308,8 @@ namespace Jbox.Service
                 finalS = cc.GetCookies(new Uri("https://" + req8.Host))["S"].Value;
                 finalSESSID = cc.GetCookies(new Uri("https://" + req8.Host))["X-LENOVO-SESS-ID"].Value;
                 mycookie = "S=" + finalS + "; " + "X-LENOVO-SESS-ID=" + finalSESSID;
+
+                return new LoginResult(LoginState.success, "登录成功！", new JboxCookie(finalS, finalSESSID));
                 //set-cookie: X-LENOVO-SESS-ID=1f658f335cff451daff90f8546ec2e5a; Path=/
                 #endregion
             }
@@ -318,6 +320,89 @@ namespace Jbox.Service
             
             return new LoginResult(LoginState.success, "登录成功！");
         }
+
+        public static LoginResult Login(string account, string password)
+        {
+            Jac.TryLastCookie(account);
+            if (!Jac.islogin)
+            {
+                Jac.LoginResult res = new Jac.LoginResult();
+                int i = 0;
+                do
+                {
+                    res = Jac.OneLogin(account, password);
+                    i++;
+                } while (res.state == Jac.LoginState.captchafail && i < 3);
+                if (res.state == Jac.LoginState.captchafail)
+                {
+                    return new LoginResult(LoginState.captchafail, "SJTU-PLUS的验证码识别服务连续3次错误");
+                }
+                if (res.state != Jac.LoginState.success)
+                {
+                    return new LoginResult(LoginState.fail, res.message);
+                }
+                var res1 = Jac.ValidateLogin();
+                if (!res1)
+                {
+                    return new LoginResult(LoginState.fail, "验证失败！");
+                }
+                dic.Add(account, res.cookie);
+            }
+            if (Jac.islogin)
+            {
+                SaveInfo();
+                return new LoginResult(LoginState.success, "登录成功");
+            }
+            else
+            {
+                return new LoginResult(LoginState.fail, "系统错误，验证失败！");
+            }
+        }
+
+        public static bool TryLastCookie(string account)
+        {
+            if (!dic.ContainsKey(account))
+                return false;
+
+            var cookie = dic[account];
+            mycookie = cookie.mycookie;
+            finalS = cookie.S;
+            finalSESSID = cookie.SESSID;
+
+            islogin = ValidateLogin();
+
+            return islogin;
+        }
+
+
+        public static void ReadInfo()
+        {
+            if (!File.Exists(configpath + "cookie.json"))
+                return;
+            StreamReader sr = new StreamReader(configpath + "cookie.json");
+            while (!sr.EndOfStream)
+            {
+                var key = sr.ReadLine();
+                var jsonstr = File.ReadAllText(configpath + key + ".json");
+                var json = JsonConvert.DeserializeObject<JboxCookie>(jsonstr);
+                dic.Add(key, json);
+            }
+            sr.Close();
+        }
+
+        public static void SaveInfo()
+        {
+            Directory.CreateDirectory(configpath);
+            StreamWriter sw = new StreamWriter(configpath + "cookie.json");
+            foreach (var item in dic)
+            {
+                var cookiestr = JsonConvert.SerializeObject(item.Value);
+                File.WriteAllText(configpath + item.Key + ".json", cookiestr);
+                sw.WriteLine(item.Key);
+            }
+            sw.Close();
+        }
+
 
         public static bool ValidateLogin()
         {
@@ -336,6 +421,7 @@ namespace Jbox.Service
                 if (!body.success)
                     return false;
                 userInfo = JsonConvert.DeserializeObject<JboxUserInfo>(body.result);
+                islogin = true;
 
                 return true;
             }
@@ -397,10 +483,12 @@ namespace Jbox.Service
         }
     }
 
+    [Serializable]
     public class JboxCookie
     {
-        public string mycookie;
-        public string S, SESSID;
+        public string mycookie { get; set; }
+        public string S { get; set; }
+        public string SESSID { get; set; }
 
         public JboxCookie(string s, string sESSID)
         {

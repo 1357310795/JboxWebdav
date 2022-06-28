@@ -1,4 +1,5 @@
 ﻿using JboxWebdav.Server.Jbox;
+using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Locking;
 using NWebDav.Server.Logging;
@@ -146,7 +147,6 @@ namespace NWebDav.Server.Stores
         public Task<Stream> GetReadableStreamAsync(IHttpContext httpContext) => Task.FromResult((Stream)null);
 
         public Task<Stream> GetReadableStreamAsync(IHttpContext httpContext,long start, long end) => Task.FromResult((Stream)null);
-        public Task<DavStatusCode> UploadFromStreamAsync(IHttpContext httpContext, Stream inputStream) => Task.FromResult(DavStatusCode.Conflict);
 
         public IPropertyManager PropertyManager => DefaultPropertyManager;
         public ILockingManager LockingManager { get; }
@@ -154,7 +154,7 @@ namespace NWebDav.Server.Stores
         public Task<IStoreItem> GetItemAsync(string name, IHttpContext httpContext)
         {
             // Determine the full path
-            var fullPath = Path.Combine(_directoryInfo.Path, name);
+            var fullPath = UriHelper.Combine(_directoryInfo.Path, name);
 
             var res = JboxService.GetJboxItemInfo(fullPath);
 
@@ -234,47 +234,71 @@ namespace NWebDav.Server.Stores
             throw new NotImplementedException("Not Supported");
         }
 
+        public async Task<DavStatusCode> UploadFromStreamAsync(IHttpContext httpContext, string name, Stream inputStream)
+        {
+            // Check if the item is writable
+            if (!IsWritable)
+                return DavStatusCode.Conflict;
+
+            // Copy the stream
+            try
+            {
+                // Copy the information to the destination stream
+                JboxService.UploadFile(UriHelper.Combine(_directoryInfo.Path, name), inputStream);
+                return DavStatusCode.Ok;
+            }
+            //catch (IOException ioException) when (ioException.IsJboxFull())
+            //{
+            //    return DavStatusCode.InsufficientStorage;
+            //}
+            catch (IOException ex)
+            {
+                return DavStatusCode.InternalServerError;
+            }
+        }
+
         public Task<StoreCollectionResult> CreateCollectionAsync(string name, bool overwrite, IHttpContext httpContext)
         {
-            //// Return error
-            //if (!IsWritable)
-            //    return Task.FromResult(new StoreCollectionResult(DavStatusCode.PreconditionFailed));
+            // Return error
+            if (!IsWritable)
+                return Task.FromResult(new StoreCollectionResult(DavStatusCode.PreconditionFailed));
 
-            //// Determine the destination path
-            //var destinationPath = Path.Combine(FullPath, name);
+            // Determine the destination path
+            var destinationPath = UriHelper.Combine(FullPath, name);
 
-            //// Check if the directory can be overwritten
-            //DavStatusCode result;
-            //if (Directory.Exists(destinationPath))
-            //{
-            //    // Check if overwrite is allowed
-            //    if (!overwrite)
-            //        return Task.FromResult(new StoreCollectionResult(DavStatusCode.PreconditionFailed));
+            // Check if the directory can be overwritten
+            DavStatusCode result;
+            if (Directory.Exists(destinationPath))
+            {
+                // Check if overwrite is allowed
+                if (!overwrite)
+                    return Task.FromResult(new StoreCollectionResult(DavStatusCode.PreconditionFailed));
 
-            //    // Overwrite existing
-            //    result = DavStatusCode.NoContent;
-            //}
-            //else
-            //{
-            //    // Created new directory
-            //    result = DavStatusCode.Created;
-            //}
+                // Overwrite existing
+                result = DavStatusCode.NoContent;
+            }
+            else
+            {
+                // Created new directory
+                result = DavStatusCode.Created;
+            }
 
-            //try
-            //{
-            //    // Attempt to create the directory
-            //    Directory.CreateDirectory(destinationPath);
-            //}
-            //catch (Exception exc)
-            //{
-            //    // Log exception
-            //    s_log.Log(LogLevel.Error, () => $"Unable to create '{destinationPath}' directory.", exc);
-            //    return null;
-            //}
+            JboxDirectoryInfo created;
+            try
+            {
+                // Attempt to create the directory
+                created = JboxService.CreateDirectory(destinationPath);
+            }
+            catch (Exception exc)
+            {
+                // Log exception
+                s_log.Log(LogLevel.Error, () => $"Unable to create '{destinationPath}' directory.", exc);
+                return null;
+            }
 
-            //// Return the collection
-            //return Task.FromResult(new StoreCollectionResult(result, new JboxStoreCollection(LockingManager, new DirectoryInfo(destinationPath), IsWritable)));
-            throw new NotImplementedException("Not Supported");
+            // Return the collection
+            return Task.FromResult(new StoreCollectionResult(result, new JboxStoreCollection(LockingManager, created, IsWritable)));
+            //throw new NotImplementedException("Not Supported");
         }
 
         public async Task<StoreItemResult> CopyAsync(IStoreCollection destinationCollection, string name, bool overwrite, IHttpContext httpContext)

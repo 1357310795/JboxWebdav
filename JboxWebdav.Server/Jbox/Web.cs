@@ -7,6 +7,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using static Jbox.Models.WebResult;
 
@@ -16,79 +17,19 @@ namespace Jbox.Service
     {
         public static WebResult Post(string url, Dictionary<string, string> queryparas, Dictionary<string, string> headers, string formdata, bool urlencode)
         {
-            StringBuilder builder1 = new StringBuilder();
-            builder1.Append(url);
 
-            if (queryparas.Count > 0)
-            {
-                builder1.Append("?");
-                int i = 0;
-                foreach (var item in queryparas)
-                {
-                    if (i > 0)
-                        builder1.Append("&");
-                    builder1.AppendFormat("{0}={1}", item.Key, item.Value);
-                    i++;
-                }
-            }
 
-            StringBuilder builder2 = new StringBuilder();
-
-            return Post(builder1.ToString(), headers, formdata, urlencode);
+            return Post(BuildUrl(url, queryparas), headers, formdata, urlencode);
         }
 
         public static WebResult Post(string url, Dictionary<string, string> queryparas, Dictionary<string, string> headers, Dictionary<string, string> formdata, bool urlencode)
         {
-            StringBuilder builder1 = new StringBuilder();
-            builder1.Append(url);
-            
-            if (queryparas.Count > 0)
-            {
-                builder1.Append("?");
-                int i = 0;
-                foreach (var item in queryparas)
-                {
-                    if (i > 0)
-                        builder1.Append("&");
-                    builder1.AppendFormat("{0}={1}", item.Key, item.Value);
-                    i++;
-                }
-            }
-
-            StringBuilder builder2 = new StringBuilder();
-            if (formdata.Count > 0)
-            {
-                int i = 0;
-                foreach (var item in formdata)
-                {
-                    if (i > 0)
-                        builder2.Append("&");
-                    builder2.AppendFormat("{0}={1}", item.Key, urlencode ? item.Value.UrlEncode(): item.Value);
-                    i++;
-                }
-            }
-
-            return Post(builder1.ToString(), headers, builder2.ToString(), urlencode);
+            return Post(BuildUrl(url, queryparas), headers, BuildForm(formdata, urlencode), urlencode);
         }
 
         public static WebResult Post(string url, Dictionary<string, string> headers, Dictionary<string, string> formdata, bool urlencode)
         {
-            #region 构造表单数据
-            StringBuilder builder = new StringBuilder();
-            if (formdata.Count > 0)
-            {
-                int i = 0;
-                foreach (var item in formdata)
-                {
-                    if (i > 0)
-                        builder.Append("&");
-                    builder.AppendFormat("{0}={1}", item.Key, urlencode ? item.Value.UrlEncode() : item.Value);
-                    i++;
-                }
-            }
-            #endregion
-
-            return Post(url, headers, builder.ToString(), urlencode);
+            return Post(url, headers, BuildForm(formdata, urlencode), urlencode);
         }
 
         public static WebResult Post(string url, Dictionary<string, string> headers, string formdata, bool urlencode)
@@ -177,6 +118,44 @@ namespace Jbox.Service
                 return new WebResult(null, false, ex.ToString());
             }
             #endregion
+        }
+
+        public static string BuildUrl(string url, Dictionary<string, string> queryparas)
+        {
+            StringBuilder builder1 = new StringBuilder();
+            builder1.Append(url);
+
+            if (queryparas.Count > 0)
+            {
+                builder1.Append("?");
+                int i = 0;
+                foreach (var item in queryparas)
+                {
+                    if (i > 0)
+                        builder1.Append("&");
+                    builder1.AppendFormat("{0}={1}", item.Key, item.Value);
+                    i++;
+                }
+            }
+            return builder1.ToString();
+        }
+
+        public static string BuildForm(Dictionary<string, string> formdata, bool urlencode)
+        {
+            StringBuilder builder = new StringBuilder();
+
+            if (formdata.Count > 0)
+            {
+                int i = 0;
+                foreach (var item in formdata)
+                {
+                    if (i > 0)
+                        builder.Append("&");
+                    builder.AppendFormat("{0}={1}", item.Key, urlencode ? item.Value.UrlEncode() : item.Value);
+                    i++;
+                }
+            }
+            return builder.ToString();
         }
 
         public static void ProcessHeaders(Dictionary<string, string> headers, HttpWebRequest req)

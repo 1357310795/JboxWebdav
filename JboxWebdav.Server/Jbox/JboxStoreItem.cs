@@ -124,32 +124,6 @@ namespace NWebDav.Server.Stores
 
         public Task<Stream> GetReadableStreamAsync(IHttpContext httpContext, long start, long end) => Task.FromResult((Stream)_fileInfo.OpenRead(start, end));
 
-        public async Task<DavStatusCode> UploadFromStreamAsync(IHttpContext httpContext, Stream inputStream)
-        {
-            // Check if the item is writable
-            if (!IsWritable)
-                return DavStatusCode.Conflict;
-
-            // Copy the stream
-            try
-            {
-                // Copy the information to the destination stream
-                using (var outputStream = _fileInfo.OpenWrite())
-                {
-                    await inputStream.CopyToAsync(outputStream).ConfigureAwait(false);
-                }
-                return DavStatusCode.Ok;
-            }
-            //catch (IOException ioException) when (ioException.IsJboxFull())
-            //{
-            //    return DavStatusCode.InsufficientStorage;
-            //}
-            catch (IOException ex)
-            {
-                return DavStatusCode.InternalServerError;
-            }
-        }
-
         public IPropertyManager PropertyManager => DefaultPropertyManager;
         public ILockingManager LockingManager { get; }
 

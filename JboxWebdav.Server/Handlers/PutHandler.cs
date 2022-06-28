@@ -48,16 +48,8 @@ namespace NWebDav.Server.Handlers
                 return true;
             }
 
-            // Obtain the item
-            var result = await collection.CreateItemAsync(splitUri.Name, true, httpContext).ConfigureAwait(false);
-            var status = result.Result;
-            if (status == DavStatusCode.Created || status == DavStatusCode.NoContent)
-            {
-                // Upload the information to the item
-                var uploadStatus = await result.Item.UploadFromStreamAsync(httpContext, request.Stream).ConfigureAwait(false);
-                if (uploadStatus != DavStatusCode.Ok)
-                    status = uploadStatus;
-            }
+            // Upload the information to the item
+            var status = await collection.UploadFromStreamAsync(httpContext, splitUri.Name, request.Stream).ConfigureAwait(false);
 
             // Finished writing
             response.SetStatus(status);

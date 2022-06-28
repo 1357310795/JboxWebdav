@@ -86,8 +86,7 @@ namespace NWebDav.Server.Stores
         // Read/Write access to the data
         Task<Stream> GetReadableStreamAsync(IHttpContext httpContext);
         Task<Stream> GetReadableStreamAsync(IHttpContext httpContext, long start, long end);
-        Task<DavStatusCode> UploadFromStreamAsync(IHttpContext httpContext, Stream source);
-
+        
         // Copy support
         Task<StoreItemResult> CopyAsync(IStoreCollection destination, string name, bool overwrite, IHttpContext httpContext);
 
@@ -104,6 +103,8 @@ namespace NWebDav.Server.Stores
         Task<IStoreItem> GetItemAsync(string name, IHttpContext httpContext);
 
         Task<IEnumerable<IStoreItem>> GetItemsAsync(IHttpContext httpContext);
+        //Upload File
+        Task<DavStatusCode> UploadFromStreamAsync(IHttpContext httpContext, string name, Stream source);
 
         // Create items and collections and add to the collection
         Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, IHttpContext httpContext);

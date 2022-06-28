@@ -109,10 +109,14 @@ namespace NWebDav.Sample.HttpListener
             // Use the Log4NET adapter for logging
             LoggerFactory.Factory = new ConsoleAdapter();
 
+            Jac.ReadInfo();
+
             // Obtain the HTTP binding settings
             var webdavProtocol =  "http";
-            var webdavIp =  "127.0.0.1";
-            var webdavPort =  "11111";
+            var webdavIp = "192.168.1.105";
+            var webdavPort = "80";
+            //var webdavIp =  "127.0.0.1";
+            //var webdavPort =  "11111";
 
             using (var httpListener = new System.Net.HttpListener())
             {
