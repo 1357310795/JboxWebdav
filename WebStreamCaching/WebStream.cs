@@ -102,7 +102,7 @@ namespace NutzCode.Libraries.Web
                 return 0;
             int cnt= await _baseStream.ReadAsync(buffer, offset, count, cancellationToken);
             _position += cnt;
-            Console.WriteLine($"Raw Stream Position: {_position}");
+            //Console.WriteLine($"Raw Stream Position: {_position}");
             return cnt;
         }
 
@@ -321,6 +321,7 @@ namespace NutzCode.Libraries.Web
                 wb.Client.Timeout = TimeSpan.FromMilliseconds(pars.TimeoutInMilliseconds);
                 await pars.PostProcessRequest(wb);
                 wb.Response = await wb.Client.SendAsync(wb.Request, HttpCompletionOption.ResponseHeadersRead, token);
+                Console.WriteLine($"Created new request: From {pars.RangeStart} to {pars.RangeEnd}");
                 token.ThrowIfCancellationRequested();
                 wb._baseStream = await wb.Response.Content.ReadAsStreamAsync();
                 wb.ContentType = wb.Response.Content.Headers.ContentType.MediaType;

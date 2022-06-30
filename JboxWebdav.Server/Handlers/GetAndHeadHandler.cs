@@ -107,14 +107,6 @@ namespace NWebDav.Server.Handlers
                 // Determine the total length
                 var length = fulllength;
 
-                //if (range == null)
-                //{
-                //    range = new Helpers.Range() { 
-                //        Start = 0, 
-                //        End = Config.Size_Part - 1 
-                //    };
-                //}
-
                 // Check if an 'If-Range' was specified
                 if (range?.If != null && propertyManager != null)
                 {
@@ -216,7 +208,11 @@ namespace NWebDav.Server.Handlers
 
                 // We're done, if we cannot read any data anymore
                 if (bytesRead == 0)
+                {
+                    Console.WriteLine($"bytesToRead: {bytesToRead}");
                     return;
+                }
+                    
                 
                 // Write the data to the destination stream
                 await dest.WriteAsync(buffer, 0, bytesRead).ConfigureAwait(false);

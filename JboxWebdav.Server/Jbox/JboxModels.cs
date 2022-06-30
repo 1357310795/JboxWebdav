@@ -467,12 +467,12 @@ namespace JboxWebdav.Server.Jbox
 
         internal Stream OpenRead()
         {
-            return JboxService.GetFile(Path);
+            return JboxService.GetFile(Path, Bytes);
         }
 
         internal Stream OpenRead(long start, long end)
         {
-            return JboxService.GetFile(Path, start, end);
+            return JboxService.GetFile(Path, Bytes, start, end);
         }
 
         internal Stream OpenWrite()

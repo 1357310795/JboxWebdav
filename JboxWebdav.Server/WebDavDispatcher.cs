@@ -147,7 +147,7 @@ namespace NWebDav.Server
                 {
                     // Log what's going wrong
                     //s_log.Log(LogLevel.Error, () => $"Unexpected exception while handling request (method={request.HttpMethod}, url={request.Url}, source={request.RemoteEndPoint}", exc);
-                    s_log.Log(LogLevel.Error, () => $"Unexpected exception : " + exc.ToString());
+                    s_log.Log(LogLevel.Error, () => $"Unexpected exception : " + exc.Message);
                     try
                     {
                         // Attempt to return 'InternalServerError' (if still possible)

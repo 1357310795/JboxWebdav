@@ -2,6 +2,8 @@
 using Jbox.Models;
 using Jbox.Service;
 using Newtonsoft.Json;
+using NutzCode.Libraries.Web;
+using NutzCode.Libraries.Web.StreamProvider;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +15,7 @@ namespace JboxWebdav.Server.Jbox
 {
     public static class JboxService
     {
-
+        private static WebDataProvider webDataProvider = new WebDataProvider(5, 5 * 1024 * 1024, 2, 100);
         //public static JboxDirectoryInfo GetJboxDirectoryInfo(string path)
         //{
         //    var headers = GetCommonHeaders();
@@ -94,7 +96,16 @@ namespace JboxWebdav.Server.Jbox
             info.Content = c;
         }
 
-        public static Stream GetFile(string path, long? start=null, long? end=null)
+        public static Stream GetFile(string path, long length, long? start = null, long? end = null)
+        {
+            ParameterResolverProvider parameterResolverProvider = new ParameterResolverProvider(path, length);
+
+            SeekableWebStream stream = new SeekableWebStream(path, start ?? 0, end ?? length, webDataProvider, parameterResolverProvider.ParameterResolver);
+
+            return stream;
+        }
+
+        public static Stream GetFile_old(string path, long? start=null, long? end=null)
         {
             Dictionary<string, string> h = new Dictionary<string, string>();
             h.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
