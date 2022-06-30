@@ -10,7 +10,8 @@ namespace NutzCode.Libraries.Web
     {
 
         private long _position;
-        private long _length;
+        private long _start;
+        private long _end;
         private string _key;
         private Func<long, SeekableWebParameters> _resolver;
         private WebDataProvider _provider;
@@ -21,9 +22,10 @@ namespace NutzCode.Libraries.Web
         }
 
 
-        public SeekableWebStream(string key, long maxsize, WebDataProvider provider, Func<long, SeekableWebParameters> webParameterResolver)
+        public SeekableWebStream(string key, long start, long end, WebDataProvider provider, Func<long, SeekableWebParameters> webParameterResolver)
         {
-            _length = maxsize;
+            _start = start;
+            _end = end;
             _resolver = webParameterResolver;
             _provider = provider;
             _key = key;
@@ -46,13 +48,13 @@ namespace NutzCode.Libraries.Web
                     _position += offset;
                     break;
                 case SeekOrigin.End:
-                    _position = _length + offset;
+                    _position = Length + offset;
                     break;
             }
             if (_position < 0)
                 _position = 0;
-            if (_position > _length)
-                _position = _length;
+            if (_position > Length)
+                _position = Length;
             return _position;
         }
 
@@ -69,11 +71,11 @@ namespace NutzCode.Libraries.Web
         {
             if (count == 0)
                 return 0;
-            int cnt = await _provider.Read(_key, _resolver, _length, _position, buffer, offset, count, cancellationToken);
+            int cnt = await _provider.Read(_key, _resolver, _end, _start + _position, buffer, offset, count, cancellationToken);
             _position += cnt;
             return cnt;
         }
-   
+
 
         public override void Write(byte[] buffer, int offset, int count)
         {
@@ -84,7 +86,7 @@ namespace NutzCode.Libraries.Web
         public override bool CanSeek => true;
         public override bool CanWrite => false;
 
-        public override long Length => _length;
+        public override long Length => _end - _start + 1;
         public override long Position
         {
             get
