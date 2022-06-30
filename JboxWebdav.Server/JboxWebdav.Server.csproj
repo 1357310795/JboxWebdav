@@ -26,4 +26,8 @@
   <ItemGroup>
     <Page Include="Stores\DiskStore.cs" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WebStreamCaching\WebStreamCaching.csproj" />
+  </ItemGroup>
 </Project>
