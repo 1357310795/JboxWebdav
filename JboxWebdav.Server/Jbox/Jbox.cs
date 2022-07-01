@@ -15,7 +15,7 @@ namespace JboxWebdav.Server.Jbox
 {
     public static class JboxService
     {
-        private static WebDataProvider webDataProvider = new WebDataProvider(5, 5 * 1024 * 1024, 2, 100);
+        private static WebDataProvider webDataProvider = new WebDataProvider(20, 4 * 1024, 2, 20000);
         //public static JboxDirectoryInfo GetJboxDirectoryInfo(string path)
         //{
         //    var headers = GetCommonHeaders();
@@ -165,7 +165,7 @@ namespace JboxWebdav.Server.Jbox
             #endregion
         }
 
-        public static JboxDirectoryInfo CreateDirectory(string path)
+        public static JboxCreateDirInfo CreateDirectory(string path)
         {
             var headers = GetCommonHeaders();
             var paras = GetCommonQueryParas();
@@ -179,10 +179,10 @@ namespace JboxWebdav.Server.Jbox
 
             var json = JsonConvert.DeserializeObject<JboxCreateDirInfo>(res.result);
 
-            return json.ToJboxDirectoryInfo();
+            return json;
         }
 
-        public static bool UploadFile(string path, Stream file)//有待优化
+        public static bool UploadFile(string path, Stream file)
         {
             var headers = GetCommonHeaders();
             headers.Add("Origin", "https://jbox.sjtu.edu.cn");
@@ -193,7 +193,6 @@ namespace JboxWebdav.Server.Jbox
             paras.Add("language", "zh");
             paras.Add("source", "file");
             paras.Add("overwrite", "true");
-            //paras.Add("S", Jac.finalS);
             paras.Add("X-LENOVO-SESS-ID", Jac.finalSESSID);
 
             string url = "https://jbox.sjtu.edu.cn:10081/v2/files/databox";
@@ -207,31 +206,32 @@ namespace JboxWebdav.Server.Jbox
             #region 处理Form表单请求内容
             string boundary = "----" + DateTime.Now.Ticks.ToString("x");//分隔符
             req.ContentType = string.Format("multipart/form-data; boundary={0}", boundary);
-            //请求流
-            var postStream = new MemoryStream();
+
+            //获取请求流
+            Stream requestStream = req.GetRequestStream();
 
             //文件数据模板
-            string fileFormdataTemplate =
+            string fileFormHeaderTemplate =
                 "\r\n--" + boundary +
                 "\r\nContent-Disposition: form-data; name=\"{0}\"; filename=\"{1}\"" +
-                "\r\nContent-Type: image/jpeg" +
+                "\r\nContent-Type: {2}" +
                 "\r\n\r\n";
 
             string formdata = null;
             //上传文件
             formdata = string.Format(
-                fileFormdataTemplate,
-                "image", //表单键
-                "captcha.jpg");
+                fileFormHeaderTemplate,
+                "file", //表单键
+                path.Substring(path.LastIndexOf("/") + 1),
+                "application/octet-stream");
 
             //统一处理
             byte[] formdataBytes = null;
+
             //第一行不需要换行
-            if (postStream.Length == 0)
-                formdataBytes = Encoding.UTF8.GetBytes(formdata.Substring(2, formdata.Length - 2));
-            else
-                formdataBytes = Encoding.UTF8.GetBytes(formdata);
-            postStream.Write(formdataBytes, 0, formdataBytes.Length);
+            formdataBytes = Encoding.UTF8.GetBytes(formdata.Substring(2, formdata.Length - 2));
+
+            requestStream.Write(formdataBytes, 0, formdataBytes.Length);
 
             //写入文件内容
 
@@ -239,33 +239,17 @@ namespace JboxWebdav.Server.Jbox
             int bytesRead = 0;
             while ((bytesRead = file.Read(buffer, 0, buffer.Length)) != 0)
             {
-                postStream.Write(buffer, 0, bytesRead);
+                requestStream.Write(buffer, 0, bytesRead);
             }
 
             //结尾
             var footer = Encoding.UTF8.GetBytes("\r\n--" + boundary + "--\r\n");
-            postStream.Write(footer, 0, footer.Length);
+            requestStream.Write(footer, 0, footer.Length);
 
             #endregion
 
-            req.ContentLength = postStream.Length;
-
-            #region 输入二进制流
-            if (postStream != null)
-            {
-                postStream.Position = 0;
-                //直接写入流
-                Stream requestStream = req.GetRequestStream();
-
-                byte[] buffer2 = new byte[1024];
-                int bytesRead2 = 0;
-                while ((bytesRead2 = postStream.Read(buffer2, 0, buffer2.Length)) != 0)
-                {
-                    requestStream.Write(buffer2, 0, bytesRead2);
-                }
-                postStream.Close();
-            }
-            #endregion
+            req.ContentLength = requestStream.Length;
+            requestStream.Close();
 
             try
             {
@@ -311,7 +295,7 @@ namespace JboxWebdav.Server.Jbox
             d.Add("path_type", "self");
             d.Add("sort", "asc");
             d.Add("orderby", "name");
-            d.Add("page_button_count", "5");
+            d.Add("page_button_count", "9999999");
             d.Add("page_size", "50");
             d.Add("include_deleted", "false");
             return d;

@@ -44,6 +44,7 @@ namespace JboxWebdav.Server.Jbox
             }
 
             SeekableWebParameters para = new SeekableWebParameters(new Uri(builder1.ToString()), path, 1024 * 1024);
+            para.TimeoutInMilliseconds = 30 * 1000;
             para.Cookies = new System.Net.CookieCollection();
             para.Cookies.Add(new System.Net.Cookie("S", Jac.finalS, "/", "jbox.sjtu.edu.cn"));
             para.Cookies.Add(new System.Net.Cookie("X-LENOVO-SESS-ID", Jac.finalSESSID, "/", "jbox.sjtu.edu.cn"));

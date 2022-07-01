@@ -71,9 +71,17 @@ namespace NutzCode.Libraries.Web
         {
             if (count == 0)
                 return 0;
-            int cnt = await _provider.Read(_key, _resolver, _end + 1 , _start + _position, buffer, offset, count, cancellationToken);
-            _position += cnt;
-            return cnt;
+            try
+            {
+                int cnt = await _provider.Read(_key, _resolver, _end + 1, _start + _position, buffer, offset, count, cancellationToken);
+                _position += cnt;
+                return cnt;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return 0;
+            }
         }
 
 

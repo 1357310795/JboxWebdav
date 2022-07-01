@@ -268,26 +268,16 @@ namespace NWebDav.Server.Stores
 
             // Check if the directory can be overwritten
             DavStatusCode result;
-            if (Directory.Exists(destinationPath))
-            {
-                // Check if overwrite is allowed
-                if (!overwrite)
-                    return Task.FromResult(new StoreCollectionResult(DavStatusCode.PreconditionFailed));
-
-                // Overwrite existing
-                result = DavStatusCode.NoContent;
-            }
-            else
-            {
-                // Created new directory
-                result = DavStatusCode.Created;
-            }
-
-            JboxDirectoryInfo created;
+            JboxCreateDirInfo created;
             try
             {
-                // Attempt to create the directory
                 created = JboxService.CreateDirectory(destinationPath);
+                if (created.success)
+                    result = DavStatusCode.Created;
+                else if (created.Code== "target name exists")
+                    result = DavStatusCode.Created;
+                else
+                    result = DavStatusCode.NoContent;
             }
             catch (Exception exc)
             {
@@ -297,7 +287,7 @@ namespace NWebDav.Server.Stores
             }
 
             // Return the collection
-            return Task.FromResult(new StoreCollectionResult(result, new JboxStoreCollection(LockingManager, created, IsWritable)));
+            return Task.FromResult(new StoreCollectionResult(result, new JboxStoreCollection(LockingManager, created.ToJboxDirectoryInfo(), IsWritable)));
             //throw new NotImplementedException("Not Supported");
         }
 

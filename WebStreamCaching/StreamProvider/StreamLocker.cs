@@ -12,8 +12,8 @@ namespace NutzCode.Libraries.Web.StreamProvider
     {
         private readonly ActiveStreamCache _activeStreams;
         private readonly InactiveStreamsCache _inactiveStreams;
-        private readonly AsyncReaderWriterLock _rw = new AsyncReaderWriterLock();
-
+        //private readonly AsyncReaderWriterLock _rw = new AsyncReaderWriterLock();
+        private readonly SemaphoreSlim _lock = new SemaphoreSlim(1);
         public StreamLocker(int maxInactiveStreams)
         {
             _inactiveStreams=new InactiveStreamsCache(maxInactiveStreams);
@@ -22,7 +22,7 @@ namespace NutzCode.Libraries.Web.StreamProvider
 
         public void Dispose()
         {
-            using (_rw.WriterLock())
+            using (_lock.Lock())
             {
                 _activeStreams.Dispose();
                 _inactiveStreams.Dispose();
@@ -32,7 +32,7 @@ namespace NutzCode.Libraries.Web.StreamProvider
 
         public void RemoveFile(string file)
         {
-            using (_rw.WriterLock())
+            using (_lock.Lock())
             {
                 _activeStreams.RemoveAndDisposeKey(file);
                 _inactiveStreams.RemoveAndDisposeKey(file);
@@ -44,10 +44,13 @@ namespace NutzCode.Libraries.Web.StreamProvider
         public async Task<StreamInfo> GetOrCreateActiveStream(string key, long blockposition, int maxBlockDistance, Func<CancellationToken, Task<WebStream>> create, CancellationToken token)
         {
             StreamInfo info=null;
-            using (await _rw.WriterLockAsync(token))
+            try
             {
-                if (!_activeStreams.Keys.Any(a => a.Item1 == key && a.Item2 >= blockposition && a.Item2 <= blockposition + maxBlockDistance))
+                using (await _lock.LockAsync(token))
                 {
+                    if (_activeStreams.Keys.Any(a => a.Item1 == key && a.Item2 >= blockposition && a.Item2 <= blockposition + maxBlockDistance))
+                        return new StreamInfo(); //Empty One
+
                     Tuple<WebStream, long> n = _inactiveStreams.CheckAndRemove(key, blockposition, maxBlockDistance);
                     if (n != null)
                     {
@@ -58,33 +61,31 @@ namespace NutzCode.Libraries.Web.StreamProvider
                     {
                         _activeStreams[new Tuple<string, long>(key, blockposition)] = null; //Lock the file/position 
                     }
-                }
-                else
-                    return new StreamInfo(); //Empty One
-            }
-            if (info == null)
-            {
-                WebStream s = await create(token);
-                if ((s.StatusCode != HttpStatusCode.OK) && (s.StatusCode != HttpStatusCode.PartialContent))
-                {
-                    using (await _rw.WriterLockAsync(token))
+
+                    if (info == null)
                     {
-                        _activeStreams.Remove(key, blockposition);
+                        WebStream s = await create(token);
+                        if ((s.StatusCode != HttpStatusCode.OK) && (s.StatusCode != HttpStatusCode.PartialContent))
+                        {
+                            _activeStreams.Remove(key, blockposition);
+                            throw new IOException("Http Status (" + s.StatusCode + ")");
+                        }
+                        _activeStreams[Tuple.Create(key, blockposition)] = s;
+                        info = new StreamInfo(this, key, s, blockposition);
                     }
-                    throw new IOException("Http Status (" + s.StatusCode + ")");
-                }
-                using (await _rw.WriterLockAsync(token))
-                {
-                    _activeStreams[Tuple.Create(key, blockposition)] = s;
-                    info=new StreamInfo(this, key, s, blockposition);
                 }
             }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+            
             return info;
         }
 
         internal void ReturnStreamAndMakeItInactive(StreamInfo info)
         {
-            using (_rw.WriterLock())
+            using (_lock.Lock())
             {
                 _activeStreams.Remove(info.File, info.OriginalBlock);
                 if (info.Stream.ContentLength != info.Stream.Position && !info.Faulted)

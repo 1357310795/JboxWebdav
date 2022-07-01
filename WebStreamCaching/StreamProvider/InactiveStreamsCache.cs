@@ -38,6 +38,8 @@ namespace NutzCode.Libraries.Web.StreamProvider
             }
             set
             {
+                if (_cacheMap.ContainsKey(key))
+                    return;
                 LinkedListNode<LRUCacheItem<Tuple<string, long>, WebStream>> node;
                 if (_cacheMap.Count >= _capacity)
                 {

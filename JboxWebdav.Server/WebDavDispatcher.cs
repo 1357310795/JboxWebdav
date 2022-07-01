@@ -68,7 +68,7 @@ namespace NWebDav.Server
         /// <returns>
         /// A task that represents the request dispatching operation.
         /// </returns>
-        public async Task DispatchRequestAsync(IHttpContext httpContext)
+        public async Task DispatchRequestAsync_ori(IHttpContext httpContext)
         {
             // Make sure a HTTP context is specified
             if (httpContext == null)
@@ -171,6 +171,79 @@ namespace NWebDav.Server
                 // Always close the context
                 await httpContext.CloseAsync().ConfigureAwait(false);
             }
+        }
+
+        /// <summary>
+        /// Dispatch the WebDAV request based on the given HTTP context.
+        /// </summary>
+        /// <param name="httpContext">
+        /// HTTP context for this request.
+        /// </param>
+        /// <returns>
+        /// A task that represents the request dispatching operation.
+        /// </returns>
+        public async Task DispatchRequestAsync(IHttpContext httpContext)//no try
+        {
+            // Make sure a HTTP context is specified
+            if (httpContext == null)
+                throw new ArgumentNullException(nameof(httpContext));
+
+            // Make sure the HTTP context has a request
+            var request = httpContext.Request;
+            if (request == null)
+                throw new ArgumentException("The HTTP context doesn't have a request.", nameof(httpContext));
+
+            // Make sure the HTTP context has a response
+            var response = httpContext.Response;
+            if (response == null)
+                throw new ArgumentException("The HTTP context doesn't have a response.", nameof(httpContext));
+
+            // Determine the request log-string
+            var logRequest = $"{request.HttpMethod}:{request.Url}:{request.RemoteEndPoint}";
+
+            // Log the request
+            s_log.Log(LogLevel.Info, () => $"{logRequest} - Start processing");
+
+            // Set the Server header of the response message. This has no
+            // functional use, but it can be used to diagnose problems by
+            // determining the actual WebDAV server and version.
+            response.SetHeaderValue("Server", s_serverName);
+
+            // Start the stopwatch
+            var sw = Stopwatch.StartNew();
+
+            IRequestHandler requestHandler;
+            // Obtain the request handler for this message
+            requestHandler = _requestHandlerFactory.GetRequestHandler(httpContext);
+
+            // Make sure we got a request handler
+            if (requestHandler == null)
+            {
+                // Log warning
+                s_log.Log(LogLevel.Warning, () => $"{logRequest} - Not implemented.");
+
+                // This request is not implemented
+                httpContext.Response.SetStatus(DavStatusCode.NotImplemented);
+                return;
+            }
+
+            // Handle the request
+            if (await requestHandler.HandleRequestAsync(httpContext, _store).ConfigureAwait(false))
+            {
+                // Log processing duration
+                s_log.Log(LogLevel.Info, () => $"{logRequest} - Finished processing ({sw.ElapsedMilliseconds}ms, HTTP result: {httpContext.Response.Status})");
+            }
+            else
+            {
+                // Log warning
+                s_log.Log(LogLevel.Warning, () => $"{logRequest} - Not processed.");
+
+                // Set status code to bad request
+                httpContext.Response.SetStatus(DavStatusCode.NotImplemented);
+            }
+
+            (requestHandler as IDisposable)?.Dispose();
+            await httpContext.CloseAsync().ConfigureAwait(false);
         }
     }
 }

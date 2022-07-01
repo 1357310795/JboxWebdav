@@ -260,7 +260,18 @@ namespace JboxWebdav.Server.Jbox
 
         [JsonProperty("message")]
         public string Message { get; set; }
+
+        [JsonProperty("code")]
+        public string Code { get; set; }
         #endregion
+
+        public bool success
+        {
+            get
+            {
+                return Result == "success";
+            }
+        }
 
         public bool IsDetailed = true;
         internal string GetName()
@@ -735,6 +746,9 @@ namespace JboxWebdav.Server.Jbox
 
         [JsonProperty("updator_uid")]
         public long UpdatorUid { get; set; }
+
+        [JsonProperty("code")]
+        public string Code { get; set; }
         #endregion
         public bool success
         {

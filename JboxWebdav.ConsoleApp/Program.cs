@@ -86,21 +86,22 @@ namespace NWebDav.Sample.HttpListener
                         //httpContext = new HttpContext(httpListenerContext);
                         httpContext = new HttpBasicContext(httpListenerContext, Jac.checkJac);
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         httpContext = new HttpContext(httpListenerContext);
                         httpContext.Response.SetStatus(DavStatusCode.Unauthorized);
                         await httpContext.CloseAsync().ConfigureAwait(false);
                         return;
                     }
-                    
+
                     // Dispatch the request
                     await webDavDispatcher.DispatchRequestAsync(httpContext).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
             {
-                throw new ArgumentException(ex.Message);
+                Console.WriteLine(ex.Message);
+                //throw new ArgumentException(ex.Message);
             }
         }
 
