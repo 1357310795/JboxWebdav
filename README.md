@@ -5,7 +5,7 @@
 
 ![Topology.png](https://s2.loli.net/2022/07/03/lXygYmUTZKpaVd7.png)
 ![intro-p1.png](https://s2.loli.net/2022/07/03/nQGUeVpHfKYWX92.png)
-![intro-p2.png](https://s2.loli.net/2022/07/03/D1oG4VvMLRKTzbp.png)
+![intro-p2.png](https://s2.loli.net/2022/07/03/wVdrNA2KH1BkfqU.png)
 ![intro-p3.png](https://s2.loli.net/2022/07/03/bivVemC479G2rsS.png)
 
 ## 使用建议
