@@ -1,0 +1,48 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>Resources\jbox.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\jbox.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\jbox.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="1.1.0" />
+    <PackageReference Include="log4net" Version="2.0.14" />
+    <PackageReference Include="MaterialDesignColors" Version="2.0.6" />
+    <PackageReference Include="MaterialDesignThemes" Version="4.5.0" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\JboxWebdav.Server.HttpListener\JboxWebdav.Server.HttpListener.csproj" />
+    <ProjectReference Include="..\JboxWebdav.Server\JboxWebdav.Server.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\jbox.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Data\rclone-v1.58.1-windows-amd64\rclone.1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\rclone-v1.58.1-windows-amd64\rclone.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\winfsp-1.11.22176.msi">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

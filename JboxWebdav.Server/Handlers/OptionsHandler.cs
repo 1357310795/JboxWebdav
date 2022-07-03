@@ -32,17 +32,16 @@ namespace NWebDav.Server.Handlers
         {
             // Obtain response
             var response = httpContext.Response;
-
             // We're a DAV class 1 and 2 compatible server
             response.SetHeaderValue("Dav", "1, 2");
             response.SetHeaderValue("MS-Author-Via", "DAV");
 
             // Set the Allow/Public headers
             response.SetHeaderValue("Allow", string.Join(", ", RequestHandlerFactory.AllowedMethods));
-            response.SetHeaderValue("Public", string.Join(", ", RequestHandlerFactory.AllowedMethods));
-
+            //response.SetHeaderValue("Public", string.Join(", ", RequestHandlerFactory.AllowedMethods));
             // Finished
             response.SetStatus(DavStatusCode.Ok);
+            response.realResponse.SendChunked = false;
             return Task.FromResult(true);
         }
     }

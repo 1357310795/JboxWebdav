@@ -1,4 +1,5 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
@@ -19,6 +20,7 @@ namespace NutzCode.Libraries.Web
 {
     public class WebStream : Stream, IDisposable
     {
+        private static ILog s_log = LogManager.GetLogger(typeof(WebStream));
         public CookieCollection Cookies { get; set; }
         public NameValueCollection Headers { get; private set; }
         public string ContentType { get; private set; }
@@ -321,7 +323,7 @@ namespace NutzCode.Libraries.Web
                 wb.Client.Timeout = TimeSpan.FromMilliseconds(pars.TimeoutInMilliseconds);
                 await pars.PostProcessRequest(wb);
                 wb.Response = await wb.Client.SendAsync(wb.Request, HttpCompletionOption.ResponseHeadersRead, token);
-                Console.WriteLine($"Created new request: {pars.Url.OriginalString} From {pars.RangeStart} to {pars.RangeEnd}");
+                s_log.Debug($"Created new request: {pars.Url.OriginalString} From {pars.RangeStart} to {pars.RangeEnd}");
                 token.ThrowIfCancellationRequested();
                 wb._baseStream = await wb.Response.Content.ReadAsStreamAsync();
                 wb.ContentType = wb.Response.Content.Headers.ContentType.MediaType;

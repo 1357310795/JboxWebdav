@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Threading.Tasks;
-
+using log4net;
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Logging;
@@ -23,7 +23,7 @@ namespace NWebDav.Server
     /// <seealso cref="IWebDavDispatcher"/>
     public class WebDavDispatcher : IWebDavDispatcher
     {
-        private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(WebDavDispatcher));
+        private static ILog s_log = LogManager.GetLogger(typeof(WebDavDispatcher));
         private static readonly string s_serverName;
 
         private readonly IStore _store;
@@ -35,7 +35,8 @@ namespace NWebDav.Server
             // this header should have a fixed layout.
             // (see https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.38)
             var assemblyVersion = typeof(WebDavDispatcher).GetTypeInfo().Assembly.GetName().Version;
-            s_serverName = $"NWebDav/{assemblyVersion}";
+            //s_serverName = $"NWebDav/{assemblyVersion}";
+            s_serverName = $"WebDav/9.9.9.9";
         }
 
         /// <summary>
@@ -68,7 +69,7 @@ namespace NWebDav.Server
         /// <returns>
         /// A task that represents the request dispatching operation.
         /// </returns>
-        public async Task DispatchRequestAsync_ori(IHttpContext httpContext)
+        public async Task DispatchRequestAsync(IHttpContext httpContext)//throw错误：http层面
         {
             // Make sure a HTTP context is specified
             if (httpContext == null)
@@ -88,7 +89,7 @@ namespace NWebDav.Server
             var logRequest = $"{request.HttpMethod}:{request.Url}:{request.RemoteEndPoint}";
 
             // Log the request
-            s_log.Log(LogLevel.Info, () => $"{logRequest} - Start processing");
+            s_log.Info($"{logRequest} - Start processing");
 
             try
             {
@@ -110,7 +111,7 @@ namespace NWebDav.Server
                     if (requestHandler == null)
                     {
                         // Log warning
-                        s_log.Log(LogLevel.Warning, () => $"{logRequest} - Not implemented.");
+                        s_log.Warn($"{logRequest} - Not implemented.");
 
                         // This request is not implemented
                         httpContext.Response.SetStatus(DavStatusCode.NotImplemented);
@@ -120,7 +121,7 @@ namespace NWebDav.Server
                 catch (Exception exc)
                 {
                     // Log error
-                    s_log.Log(LogLevel.Error, () => $"Unexpected exception while trying to obtain the request handler (method={request.HttpMethod}, url={request.Url}, source={request.RemoteEndPoint}", exc);
+                    s_log.Error($"Unexpected exception while trying to obtain the request handler (method={request.HttpMethod}, url={request.Url}, source={request.RemoteEndPoint}", exc);
 
                     // Abort
                     return;
@@ -132,12 +133,12 @@ namespace NWebDav.Server
                     if (await requestHandler.HandleRequestAsync(httpContext, _store).ConfigureAwait(false))
                     {
                         // Log processing duration
-                        s_log.Log(LogLevel.Info, () => $"{logRequest} - Finished processing ({sw.ElapsedMilliseconds}ms, HTTP result: {httpContext.Response.Status})");
+                        s_log.Info($"{logRequest} - Finished processing ({sw.ElapsedMilliseconds}ms, HTTP result: {httpContext.Response.Status})");
                     }
                     else
                     {
                         // Log warning
-                        s_log.Log(LogLevel.Warning, () => $"{logRequest} - Not processed.");
+                        s_log.Warn($"{logRequest} - Not processed.");
 
                         // Set status code to bad request
                         httpContext.Response.SetStatus(DavStatusCode.NotImplemented);
@@ -147,11 +148,11 @@ namespace NWebDav.Server
                 {
                     // Log what's going wrong
                     //s_log.Log(LogLevel.Error, () => $"Unexpected exception while handling request (method={request.HttpMethod}, url={request.Url}, source={request.RemoteEndPoint}", exc);
-                    s_log.Log(LogLevel.Error, () => $"Unexpected exception : " + exc.Message);
+                    s_log.Error($"Unexpected exception : " + exc.Message);
                     try
                     {
                         // Attempt to return 'InternalServerError' (if still possible)
-                        httpContext.Response.SetStatus(DavStatusCode.InternalServerError);
+                        httpContext.Response.SetStatus(DavStatusCode.BadRequest);
                     }
                     catch
                     {
@@ -173,78 +174,71 @@ namespace NWebDav.Server
             }
         }
 
-        /// <summary>
-        /// Dispatch the WebDAV request based on the given HTTP context.
-        /// </summary>
-        /// <param name="httpContext">
-        /// HTTP context for this request.
-        /// </param>
-        /// <returns>
-        /// A task that represents the request dispatching operation.
-        /// </returns>
-        public async Task DispatchRequestAsync(IHttpContext httpContext)//no try
-        {
-            // Make sure a HTTP context is specified
-            if (httpContext == null)
-                throw new ArgumentNullException(nameof(httpContext));
+        //public async Task DispatchRequestAsync_notry(IHttpContext httpContext)//no try
+        //{
+        //    // Make sure a HTTP context is specified
+        //    if (httpContext == null)
+        //        throw new ArgumentNullException(nameof(httpContext));
 
-            // Make sure the HTTP context has a request
-            var request = httpContext.Request;
-            if (request == null)
-                throw new ArgumentException("The HTTP context doesn't have a request.", nameof(httpContext));
+        //    // Make sure the HTTP context has a request
+        //    var request = httpContext.Request;
+        //    if (request == null)
+        //        throw new ArgumentException("The HTTP context doesn't have a request.", nameof(httpContext));
 
-            // Make sure the HTTP context has a response
-            var response = httpContext.Response;
-            if (response == null)
-                throw new ArgumentException("The HTTP context doesn't have a response.", nameof(httpContext));
+        //    // Make sure the HTTP context has a response
+        //    var response = httpContext.Response;
+        //    if (response == null)
+        //        throw new ArgumentException("The HTTP context doesn't have a response.", nameof(httpContext));
 
-            // Determine the request log-string
-            var logRequest = $"{request.HttpMethod}:{request.Url}:{request.RemoteEndPoint}";
+        //    // Determine the request log-string
+        //    var logRequest = $"{request.HttpMethod}:{request.Url}:{request.RemoteEndPoint}";
 
-            // Log the request
-            s_log.Log(LogLevel.Info, () => $"{logRequest} - Start processing");
+        //    // Log the request
+        //    s_log.Log(LogLevel.Info, () => $"{logRequest} - Start processing");
 
-            // Set the Server header of the response message. This has no
-            // functional use, but it can be used to diagnose problems by
-            // determining the actual WebDAV server and version.
-            response.SetHeaderValue("Server", s_serverName);
+        //    // Set the Server header of the response message. This has no
+        //    // functional use, but it can be used to diagnose problems by
+        //    // determining the actual WebDAV server and version.
+        //    //response.SetHeaderValue("Server", s_serverName);
+        //    response.realResponse.Headers.Remove("Server");
 
-            // Start the stopwatch
-            var sw = Stopwatch.StartNew();
+        //    // Start the stopwatch
+        //    var sw = Stopwatch.StartNew();
 
-            IRequestHandler requestHandler;
-            // Obtain the request handler for this message
-            requestHandler = _requestHandlerFactory.GetRequestHandler(httpContext);
+        //    IRequestHandler requestHandler;
+        //    // Obtain the request handler for this message
+        //    requestHandler = _requestHandlerFactory.GetRequestHandler(httpContext);
 
-            // Make sure we got a request handler
-            if (requestHandler == null)
-            {
-                // Log warning
-                s_log.Log(LogLevel.Warning, () => $"{logRequest} - Not implemented.");
+        //    // Make sure we got a request handler
+        //    if (requestHandler == null)
+        //    {
+        //        // Log warning
+        //        s_log.Log(LogLevel.Warning, () => $"{logRequest} - Not implemented.");
 
-                // This request is not implemented
-                httpContext.Response.SetStatus(DavStatusCode.NotImplemented);
-                return;
-            }
+        //        // This request is not implemented
+        //        httpContext.Response.SetStatus(DavStatusCode.NotImplemented);
+        //        return;
+        //    }
 
-            // Handle the request
-            if (await requestHandler.HandleRequestAsync(httpContext, _store).ConfigureAwait(false))
-            {
-                // Log processing duration
-                s_log.Log(LogLevel.Info, () => $"{logRequest} - Finished processing ({sw.ElapsedMilliseconds}ms, HTTP result: {httpContext.Response.Status})");
-            }
-            else
-            {
-                // Log warning
-                s_log.Log(LogLevel.Warning, () => $"{logRequest} - Not processed.");
+        //    // Handle the request
+        //    if (await requestHandler.HandleRequestAsync(httpContext, _store).ConfigureAwait(false))
+        //    {
+        //        // Log processing duration
+        //        s_log.Log(LogLevel.Info, () => $"{logRequest} - Finished processing ({sw.ElapsedMilliseconds}ms, HTTP result: {httpContext.Response.Status})");
+        //    }
+        //    else
+        //    {
+        //        // Log warning
+        //        s_log.Log(LogLevel.Warning, () => $"{logRequest} - Not processed.");
 
-                // Set status code to bad request
-                httpContext.Response.SetStatus(DavStatusCode.NotImplemented);
-            }
+        //        // Set status code to bad request
+        //        httpContext.Response.SetStatus(DavStatusCode.NotImplemented);
+        //    }
 
-            (requestHandler as IDisposable)?.Dispose();
-            await httpContext.CloseAsync().ConfigureAwait(false);
-        }
+            
+        //    (requestHandler as IDisposable)?.Dispose();
+        //    await httpContext.CloseAsync().ConfigureAwait(false);
+        //}
     }
 }
 

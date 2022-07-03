@@ -10,12 +10,14 @@ namespace Jbox.Models
     public class WebResult : CommonResult
     {
         public HttpStatusCode? code;
+        public string message;
 
-        public WebResult(HttpStatusCode? code, bool success, string result)
+        public WebResult(HttpStatusCode? code, bool success, string result, string message)
         {
             this.code = code;
             this.success = success;
             this.result = result;
+            this.message = message;
         }
     }
 }

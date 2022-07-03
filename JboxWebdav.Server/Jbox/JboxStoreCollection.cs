@@ -293,9 +293,9 @@ namespace NWebDav.Server.Stores
 
         public async Task<StoreItemResult> CopyAsync(IStoreCollection destinationCollection, string name, bool overwrite, IHttpContext httpContext)
         {
-            //// Just create the folder itself
-            //var result = await destinationCollection.CreateCollectionAsync(name, overwrite, httpContext).ConfigureAwait(false);
-            //return new StoreItemResult(result.Result, result.Collection);
+            // Just create the folder itself
+            var result = await destinationCollection.CreateCollectionAsync(name, overwrite, httpContext).ConfigureAwait(false);
+            return new StoreItemResult(result.Result, result.Collection);
             throw new NotImplementedException("Not Supported");
         }
 
@@ -307,132 +307,130 @@ namespace NWebDav.Server.Stores
 
         public async Task<StoreItemResult> MoveItemAsync(string sourceName, IStoreCollection destinationCollection, string destinationName, bool overwrite, IHttpContext httpContext)
         {
-            //// Return error
-            //if (!IsWritable)
-            //    return new StoreItemResult(DavStatusCode.PreconditionFailed);
+            // Return error
+            if (!IsWritable)
+                return new StoreItemResult(DavStatusCode.PreconditionFailed);
 
-            //// Determine the object that is being moved
-            //var item = await GetItemAsync(sourceName, httpContext).ConfigureAwait(false);
-            //if (item == null)
-            //    return new StoreItemResult(DavStatusCode.NotFound);
+            // Determine the object that is being moved
+            var item = await GetItemAsync(sourceName, httpContext).ConfigureAwait(false);
+            if (item == null)
+                return new StoreItemResult(DavStatusCode.NotFound);
 
-            //try
-            //{
-            //    // If the destination collection is a directory too, then we can simply move the file
-            //    if (destinationCollection is JboxStoreCollection destinationJboxStoreCollection)
-            //    {
-            //        // Return error
-            //        if (!destinationJboxStoreCollection.IsWritable)
-            //            return new StoreItemResult(DavStatusCode.PreconditionFailed);
+            try
+            {
+                if (destinationCollection is not JboxStoreCollection destinationJboxStoreCollection)
+                {
+                    //// Attempt to copy the item to the destination collection
+                    //var result = await item.CopyAsync(destinationCollection, destinationName, overwrite, httpContext).ConfigureAwait(false);
+                    //if (result.Result == DavStatusCode.Created || result.Result == DavStatusCode.NoContent)
+                    //    await DeleteItemAsync(sourceName, httpContext).ConfigureAwait(false);
 
-            //        // Determine source and destination paths
-            //        var sourcePath = Path.Combine(_directoryInfo.FullName, sourceName);
-            //        var destinationPath = Path.Combine(destinationJboxStoreCollection._directoryInfo.FullName, destinationName);
+                    //// Return the result
+                    //return result;
+                    throw new Exception("the destination collection is not a directory");
+                }
+                else// If the destination collection is a directory too, then we can simply move the file
+                {
+                    // Return error
+                    if (!destinationJboxStoreCollection.IsWritable)
+                        return new StoreItemResult(DavStatusCode.PreconditionFailed);
 
-            //        // Check if the file already exists
-            //        DavStatusCode result;
-            //        if (File.Exists(destinationPath))
-            //        {
-            //            // Remove the file if it already exists (if allowed)
-            //            if (!overwrite)
-            //                return new StoreItemResult(DavStatusCode.Forbidden);
+                    // Determine source and destination paths
+                    var sourcePath = UriHelper.Combine(_directoryInfo.Path, sourceName);
+                    var destinationPath = UriHelper.Combine(destinationJboxStoreCollection._directoryInfo.Path, destinationName);
 
-            //            // The file will be overwritten
-            //            File.Delete(destinationPath);
-            //            result = DavStatusCode.NoContent;
-            //        }
-            //        else if (Directory.Exists(destinationPath))
-            //        {
-            //            // Remove the directory if it already exists (if allowed)
-            //            if (!overwrite)
-            //                return new StoreItemResult(DavStatusCode.Forbidden);
+                    // Check if the file already exists
+                    DavStatusCode result;
 
-            //            // The file will be overwritten
-            //            Directory.Delete(destinationPath, true);
-            //            result = DavStatusCode.NoContent;
-            //        }
-            //        else
-            //        {
-            //            // The file will be "created"
-            //            result = DavStatusCode.Created;
-            //        }
+                    var res = JboxService.GetJboxItemInfo(destinationPath);
 
-            //        switch (item)
-            //        {
-            //            case JboxStoreItem _:
-            //                // Move the file
-            //                File.Move(sourcePath, destinationPath);
-            //                return new StoreItemResult(result, new JboxStoreItem(LockingManager, new FileInfo(destinationPath), IsWritable));
+                    if (res.success)
+                    {
+                        if (!overwrite)
+                            return new StoreItemResult(DavStatusCode.PreconditionFailed);
 
-            //            case JboxStoreCollection _:
-            //                // Move the directory
-            //                Directory.Move(sourcePath, destinationPath);
-            //                return new StoreItemResult(result, new JboxStoreCollection(LockingManager, new DirectoryInfo(destinationPath), IsWritable));
+                        JboxService.DeleteJboxItem(res);
+                        result = DavStatusCode.NoContent;
+                    }
+                    else
+                        result = DavStatusCode.Created;
 
-            //            default:
-            //                // Invalid item
-            //                Debug.Fail($"Invalid item {item.GetType()} inside the {nameof(JboxStoreCollection)}.");
-            //                return new StoreItemResult(DavStatusCode.InternalServerError);
-            //        }
-            //    }
-            //    else
-            //    {
-            //        // Attempt to copy the item to the destination collection
-            //        var result = await item.CopyAsync(destinationCollection, destinationName, overwrite, httpContext).ConfigureAwait(false);
-            //        if (result.Result == DavStatusCode.Created || result.Result == DavStatusCode.NoContent)
-            //            await DeleteItemAsync(sourceName, httpContext).ConfigureAwait(false);
+                    switch (item)
+                    {
+                        case JboxStoreItem _:
+                            // Move the file
+                            if (destinationJboxStoreCollection._directoryInfo.Path == _directoryInfo.Path)
+                            {
+                                JboxService.RenameJboxItem(sourcePath, destinationPath);
+                            }
+                            else
+                            {
+                                JboxService.MoveJboxItem(sourcePath, destinationJboxStoreCollection._directoryInfo.Path);
+                            }
+                            
+                            var item1 = JboxService.GetJboxItemInfo(destinationPath);
+                            if (!item1.success)
+                                return new StoreItemResult(DavStatusCode.Conflict);
 
-            //        // Return the result
-            //        return result;
-            //    }
-            //}
-            //catch (UnauthorizedAccessException)
-            //{
-            //    return new StoreItemResult(DavStatusCode.Forbidden);
-            //}
-            throw new NotImplementedException("Not Supported");
+                            return new StoreItemResult(result, new JboxStoreItem(LockingManager, item1.ToJboxFileInfo(), IsWritable));
+
+                        case JboxStoreCollection _:
+                            // Move the directory
+                            if (destinationJboxStoreCollection._directoryInfo.Path == _directoryInfo.Path)
+                            {
+                                JboxService.RenameJboxItem(sourcePath, destinationPath);
+                            }
+                            else
+                            {
+                                JboxService.MoveJboxItem(sourcePath, destinationJboxStoreCollection._directoryInfo.Path);
+                            }
+
+                            var item2 = JboxService.GetJboxItemInfo(destinationPath);
+                            if (!item2.success)
+                                return new StoreItemResult(DavStatusCode.Conflict);
+
+                            return new StoreItemResult(result, new JboxStoreCollection(LockingManager, item2.ToJboxDirectoryInfo(), IsWritable));
+                        default:
+                            return new StoreItemResult(DavStatusCode.InternalServerError);
+                    }
+                }
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return new StoreItemResult(DavStatusCode.Forbidden);
+            }
         }
 
         public Task<DavStatusCode> DeleteItemAsync(string name, IHttpContext httpContext)
         {
-            //// Return error
-            //if (!IsWritable)
-            //    return Task.FromResult(DavStatusCode.PreconditionFailed);
+            // Return error
+            if (!IsWritable)
+                return Task.FromResult(DavStatusCode.PreconditionFailed);
 
-            //// Determine the full path
-            //var fullPath = Path.Combine(_directoryInfo.FullName, name);
-            //try
-            //{
-            //    // Check if the file exists
-            //    if (File.Exists(fullPath))
-            //    {
-            //        // Delete the file
-            //        File.Delete(fullPath);
-            //        return Task.FromResult(DavStatusCode.Ok);
-            //    }
-
-            //    // Check if the directory exists
-            //    if (Directory.Exists(fullPath))
-            //    {
-            //        // Delete the directory
-            //        Directory.Delete(fullPath);
-            //        return Task.FromResult(DavStatusCode.Ok);
-            //    }
-
-            //    // Item not found
-            //    return Task.FromResult(DavStatusCode.NotFound);
-            //}
-            //catch (UnauthorizedAccessException)
-            //{
-            //    return Task.FromResult(DavStatusCode.Forbidden);
-            //}
-            //catch (Exception exc)
-            //{
-            //    // Log exception
-            //    s_log.Log(LogLevel.Error, () => $"Unable to delete '{fullPath}' directory.", exc);
-            //    return Task.FromResult(DavStatusCode.InternalServerError);
-            //}
-            throw new NotImplementedException("Not Supported");
+            // Determine the full path
+            var fullPath = UriHelper.Combine(_directoryInfo.Path, name);
+            try
+            {
+                // Check if the item exists
+                var item = JboxService.GetJboxItemInfo(fullPath);
+                if (item.success)
+                {
+                    JboxService.DeleteJboxItem(fullPath);
+                    return Task.FromResult(DavStatusCode.Ok);
+                }
+                // Item not found
+                return Task.FromResult(DavStatusCode.NotFound);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Task.FromResult(DavStatusCode.Forbidden);
+            }
+            catch (Exception exc)
+            {
+                // Log exception
+                s_log.Log(LogLevel.Error, () => $"Unable to delete '{fullPath}' directory.", exc);
+                return Task.FromResult(DavStatusCode.BadRequest);
+            }
         }
 
         public InfiniteDepthMode InfiniteDepthMode => InfiniteDepthMode.Assume1;

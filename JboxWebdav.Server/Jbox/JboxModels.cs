@@ -769,4 +769,25 @@ namespace JboxWebdav.Server.Jbox
             };
         }
     }
+
+    public class JboxMoveItemInfo
+    {
+        #region Json Properties
+        [JsonProperty("result")]
+        public string Result { get; set; }
+
+        [JsonProperty("code")]
+        public string Code { get; set; }
+
+        [JsonProperty("message")]
+        public string Message { get; set; }
+        #endregion
+        public bool success
+        {
+            get
+            {
+                return Result == "success";
+            }
+        }
+    }
 }

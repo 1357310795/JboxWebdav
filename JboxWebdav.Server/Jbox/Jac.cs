@@ -1,4 +1,5 @@
-﻿using JboxWebdav.Server.Jbox;
+﻿using Jbox.Models;
+using JboxWebdav.Server.Jbox;
 using Newtonsoft.Json;
 using SixLabors.ImageSharp.Processing;
 using System.Net;
@@ -13,10 +14,11 @@ namespace Jbox.Service
         public static string finalS, finalSESSID;
         public static bool islogin;
         public static JboxUserInfo userInfo;
+        public static string account, password;
         public static string configpath = Environment.GetEnvironmentVariable("LocalAppData") + "\\JboxWebdav\\";
 
 
-        private static Dictionary<string, JboxCookie> dic = new Dictionary<string, JboxCookie>();
+        public static Dictionary<string, JboxCookie> dic = new Dictionary<string, JboxCookie>();
 
         public static bool checkJac(HttpListenerBasicIdentity identity)
         {
@@ -25,8 +27,7 @@ namespace Jbox.Service
                 return true;
             }
             var res = Jac.Login(identity.Name, identity.Password);
-            Console.WriteLine(res.state);
-            Console.WriteLine(res.message);
+
             if (res.state != Jac.LoginState.success)
                 return false;
 
@@ -47,7 +48,16 @@ namespace Jbox.Service
                 HttpWebResponse resp1 = (HttpWebResponse)req1.GetResponse();
 
                 if (resp1.StatusCode != HttpStatusCode.Redirect)
+                {
+                    if (resp1.StatusCode == HttpStatusCode.OK)
+                    {
+                        var html = Web.GetResponseBody(resp1, resp1.GetResponseStream());
+                        if (html.Contains("校外访问本网站"))
+                            return new LoginResult(LoginState.novpn, "请先拨通学校的VPN后再登录");
+                    }
                     return new LoginResult(LoginState.fail, "1. /oauth 出错");
+                }
+                    
 
                 string url2 = resp1.Headers["Location"];
                 #endregion
@@ -260,19 +270,15 @@ namespace Jbox.Service
 
                 if (resp6.StatusCode == HttpStatusCode.OK)
                 {
-                    var body = Web.GetResponseBody(resp6.StatusCode, resp6, resp6.GetResponseStream());
-                    if (body.success)
+                    var body = Web.GetResponseBody(resp6, resp6.GetResponseStream());
+                    if (body.Contains("请正确填写你的用户名和密码"))
                     {
-                        if (body.result.Contains("请正确填写你的用户名和密码"))
-                        {
-                            return new LoginResult(LoginState.fail, "用户名或密码错误，请重试！（注意区分大小写）");
-                        }
-                        if (body.result.Contains("请正确填写验证码"))
-                        {
-                            return new LoginResult(LoginState.captchafail, "SJTU-PLUS的自动识别验证码已经连续3次错误……请重试！");
-                        }
+                        return new LoginResult(LoginState.fail, "用户名或密码错误，请重试！（注意区分大小写）");
                     }
-
+                    if (body.Contains("请正确填写验证码"))
+                    {
+                        return new LoginResult(LoginState.captchafail, "SJTU-PLUS的自动识别验证码已经连续3次错误……请重试！");
+                    }
                 }
                 if (!(resp6.StatusCode == HttpStatusCode.Redirect))
                     return new LoginResult(LoginState.fail, "再次 /jaccount/jalogin 错误");
@@ -374,7 +380,6 @@ namespace Jbox.Service
             return islogin;
         }
 
-
         public static void ReadInfo()
         {
             if (!File.Exists(configpath + "cookie.json"))
@@ -403,7 +408,6 @@ namespace Jbox.Service
             sw.Close();
         }
 
-
         public static bool ValidateLogin()
         {
             var url = "https://jbox.sjtu.edu.cn/v2/user/info/get?S=" + finalS;
@@ -414,13 +418,12 @@ namespace Jbox.Service
             req.UserAgent = "LDClientWin_6.2.0.36_Microsoft Windows 10 Ver10.0_64";
             try
             {
-                HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
-                if (resp.StatusCode != HttpStatusCode.OK)
+                WebResult result = Web.GetFinalResult(req);
+                if (!result.success)
                     return false;
-                var body = Web.GetResponseBody(resp.StatusCode, resp, resp.GetResponseStream());
-                if (!body.success)
+                if (result.code != HttpStatusCode.OK)
                     return false;
-                userInfo = JsonConvert.DeserializeObject<JboxUserInfo>(body.result);
+                userInfo = JsonConvert.DeserializeObject<JboxUserInfo>(result.result);
                 islogin = true;
 
                 return true;
@@ -479,7 +482,7 @@ namespace Jbox.Service
 
         public enum LoginState
         {
-            success, fail, captchafail
+            success, fail, captchafail, novpn
         }
     }
 

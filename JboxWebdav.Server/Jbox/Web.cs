@@ -17,8 +17,6 @@ namespace Jbox.Service
     {
         public static WebResult Post(string url, Dictionary<string, string> queryparas, Dictionary<string, string> headers, string formdata, bool urlencode)
         {
-
-
             return Post(BuildUrl(url, queryparas), headers, formdata, urlencode);
         }
 
@@ -58,21 +56,12 @@ namespace Jbox.Service
             }
             catch (Exception ex)
             {
-                return new WebResult(null, false, ex.ToString());
+                return new WebResult(null, false, null, ex.ToString());
             }
             #endregion
 
             #region 获取响应
-            try
-            {
-                HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
-                Stream stream = resp.GetResponseStream();
-                return GetResponseBody(resp.StatusCode, resp, stream);
-            }
-            catch (Exception ex)
-            {
-                return new WebResult(null, false, ex.ToString());
-            }
+            return GetFinalResult(req);
             #endregion
         }
 
@@ -107,16 +96,7 @@ namespace Jbox.Service
             #endregion
 
             #region 获取响应
-            try
-            {
-                HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
-                Stream stream = resp.GetResponseStream();
-                return GetResponseBody(resp.StatusCode, resp, stream);
-            }
-            catch (Exception ex)
-            {
-                return new WebResult(null, false, ex.ToString());
-            }
+            return GetFinalResult(req);
             #endregion
         }
 
@@ -208,20 +188,44 @@ namespace Jbox.Service
             HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
             req.Method = "GET";
             ProcessHeaders(headers, req);
+            return GetFinalResult(req);
+        }
 
+        public static WebResult GetFinalResult(HttpWebRequest req)
+        {
+            HttpWebResponse resp = null;
             try
             {
-                HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
-                Stream stream = resp.GetResponseStream();
-                return GetResponseBody(resp.StatusCode, resp, stream);
+                resp = (HttpWebResponse)req.GetResponse();
+            }
+            catch (WebException ex)
+            {
+                resp = (HttpWebResponse)ex.Response;
+                if (resp == null)
+                    return new WebResult(null, false, null, ex.ToString());
+            }
+            Stream stream = null;
+            try
+            {
+                stream = resp.GetResponseStream();
             }
             catch (Exception ex)
             {
-                return new WebResult(null, false, ex.ToString());
+                if (stream == null)
+                    return new WebResult(resp.StatusCode, false, null, ex.ToString());
+            }
+            try
+            {
+                var body = GetResponseBody(resp, stream);
+                return new WebResult(resp.StatusCode, true, body, null);
+            }
+            catch (Exception ex)
+            {
+                return new WebResult(resp.StatusCode, false, null, ex.ToString());
             }
         }
 
-        public static WebResult GetResponseBody(HttpStatusCode code, HttpWebResponse resp, Stream stream)
+        public static string GetResponseBody(HttpWebResponse resp, Stream stream)
         {
             string result;
             //获取响应内容
@@ -250,7 +254,7 @@ namespace Jbox.Service
                     result = reader.ReadToEnd();
                 }
             }
-            return new WebResult(code, true, result);
+            return result;
         }
 
         public static Dictionary<string, string> PostCommonHeaders()

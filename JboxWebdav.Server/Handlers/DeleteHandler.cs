@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-
+using JboxWebdav.Server.Jbox;
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
@@ -45,71 +45,40 @@ namespace NWebDav.Server.Handlers
             var splitUri = RequestHelper.SplitUri(request.Url);
 
             // Obtain parent collection
-            var parentCollection = await store.GetCollectionAsync(splitUri.CollectionUri, httpContext).ConfigureAwait(false);
-            if (parentCollection == null)
-            {
-                // Source not found
-                response.SetStatus(DavStatusCode.NotFound);
-                return true;
-            }
+            var parentCollectionUri = UriHelper.GetPathFromUri(splitUri.CollectionUri);
 
             // Obtain the item that actually is deleted
-            var deleteItem = await parentCollection.GetItemAsync(splitUri.Name, httpContext).ConfigureAwait(false);
-            if (deleteItem == null)
+            var deleteItemUri = UriHelper.Combine(parentCollectionUri, splitUri.Name);
+
+            // Delete item
+            JboxMoveItemInfo res = null;
+            res = JboxService.DeleteJboxItem(deleteItemUri);
+            if (res.success)
             {
-                // Source not found
+                response.SetStatus(DavStatusCode.Ok);
+                return true;
+            }
+            if (res.Code == "source not found")
+            {
+                // Item not found
                 response.SetStatus(DavStatusCode.NotFound);
                 return true;
             }
-
-            // Check if the item is locked
-            if (deleteItem.LockingManager?.IsLocked(deleteItem) ?? false)
-            {
-                // Obtain the lock token
-                var ifToken = request.GetIfLockToken();
-                if (!deleteItem.LockingManager.HasLock(deleteItem, ifToken))
-                {
-                    response.SetStatus(DavStatusCode.Locked);
-                    return true;
-                }
-
-                // Remove the token
-                deleteItem.LockingManager.Unlock(deleteItem, ifToken);
-            }
-
-            // Delete item
-            var status = await DeleteItemAsync(parentCollection, splitUri.Name, httpContext, splitUri.CollectionUri).ConfigureAwait(false);
-            if (status == DavStatusCode.Ok && errors.HasItems)
-            {
-                // Obtain the status document
-                var xDocument = new XDocument(errors.GetXmlMultiStatus());
-
-                // Stream the document
-                await response.SendResponseAsync(DavStatusCode.MultiStatus, xDocument).ConfigureAwait(false);
-            }
-            else
-            {
-                // Return the proper status
-                response.SetStatus(status);
-            }
-
-
+            response.SetStatus(DavStatusCode.BadRequest);
             return true;
         }
 
-        private async Task<DavStatusCode> DeleteItemAsync(IStoreCollection collection, string name, IHttpContext httpContext, Uri baseUri)
+        private async Task<DavStatusCode> DeleteItemAsync(IStoreCollection collection, string name, IStoreItem deleteItem, IHttpContext httpContext, Uri baseUri)
         {
-            // Obtain the actual item
-            var deleteItem = await collection.GetItemAsync(name, httpContext).ConfigureAwait(false);
-            if (deleteItem is IStoreCollection deleteCollection)
-            {
-                // Determine the new base URI
-                var subBaseUri = UriHelper.Combine(baseUri, name);
+            //if (deleteItem is IStoreCollection deleteCollection)
+            //{
+            //    // Determine the new base URI
+            //    var subBaseUri = UriHelper.Combine(baseUri, name);
 
-                // Delete all entries first
-                foreach (var entry in await deleteCollection.GetItemsAsync(httpContext).ConfigureAwait(false))
-                    await DeleteItemAsync(deleteCollection, entry.Name, httpContext, subBaseUri).ConfigureAwait(false);
-            }
+            //    // Delete all entries first
+            //    foreach (var entry in await deleteCollection.GetItemsAsync(httpContext).ConfigureAwait(false))
+            //        await DeleteItemAsync(deleteCollection, entry.Name, entry, httpContext, subBaseUri).ConfigureAwait(false);
+            //}
 
             // Attempt to delete the item
             return await collection.DeleteItemAsync(name, httpContext).ConfigureAwait(false);

@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Nito.AsyncEx;
+using System;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 
 namespace NutzCode.Libraries.Web.StreamProvider
 {

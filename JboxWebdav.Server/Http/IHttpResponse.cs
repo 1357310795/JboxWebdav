@@ -1,4 +1,5 @@
 using System.IO;
+using System.Net;
 
 namespace NWebDav.Server.Http
 {
@@ -64,5 +65,10 @@ namespace NWebDav.Server.Http
         /// </para>
         /// </remarks>
         Stream Stream { get; }
+
+        /// <summary>
+        /// fdfdfdf
+        /// </summary>
+        HttpListenerResponse realResponse { get; }
     }
 }

@@ -174,15 +174,15 @@ namespace JboxWebdav.Server.Jbox
             var res = Web.Post("https://jbox.sjtu.edu.cn/v2/fileops/create_folder/databox",
                 paras, headers, forms, true);
 
-            if (!res.success)
-                throw new Exception(res.result);
+            if (res.result == null)
+                throw new Exception(res.message);
 
             var json = JsonConvert.DeserializeObject<JboxCreateDirInfo>(res.result);
 
             return json;
         }
 
-        public static bool UploadFile(string path, Stream file)
+        public static bool UploadFile(string path, Stream file)//待优化
         {
             var headers = GetCommonHeaders();
             headers.Add("Origin", "https://jbox.sjtu.edu.cn");
@@ -201,6 +201,7 @@ namespace JboxWebdav.Server.Jbox
 
             HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
             req.Method = "POST";
+            req.AllowWriteStreamBuffering = false;
             Web.ProcessHeaders(headers, req);
 
             #region 处理Form表单请求内容
@@ -240,6 +241,7 @@ namespace JboxWebdav.Server.Jbox
             while ((bytesRead = file.Read(buffer, 0, buffer.Length)) != 0)
             {
                 requestStream.Write(buffer, 0, bytesRead);
+                requestStream.Flush();
             }
 
             //结尾
@@ -248,20 +250,82 @@ namespace JboxWebdav.Server.Jbox
 
             #endregion
 
-            req.ContentLength = requestStream.Length;
             requestStream.Close();
-
+            //req.ContentLength = requestStream.Length;
+            
             try
             {
-                HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
-                Stream stream = resp.GetResponseStream();
-                var res = Web.GetResponseBody(resp.StatusCode, resp, stream);
+                var res = Web.GetFinalResult(req);
                 return res.success;
             }
             catch (Exception ex)
             {
                 return false;
             }
+        }
+
+        public static JboxMoveItemInfo MoveJboxItem(string source, string destDir)
+        {
+            string reqBodyValue = "{\"to\":{\"root\":\"databox\",\"path\":\"" + destDir + "\",\"path_type\":\"self\",\"from\":\"\"},\"from\":[{\"root\":\"databox\",\"path\":\"" + source + "\",\"path_type\":\"self\",\"from\":\"\"}],\"other_data\":\"\"}";
+
+            var headers = GetCommonHeaders();
+            var paras = GetCommonQueryParas();
+            var forms = new Dictionary<string, string>();
+            forms.Add("json", reqBodyValue);
+
+            var res = Web.Post("https://jbox.sjtu.edu.cn/v2/fileops/batch_move", paras, headers, forms, true);
+
+            if (res.result == null)
+                throw new Exception(res.message);
+
+            var json = JsonConvert.DeserializeObject<JboxMoveItemInfo>(res.result);
+
+            return json;
+        }
+
+        public static JboxMoveItemInfo RenameJboxItem(string source, string dest)
+        {
+            var headers = GetCommonHeaders();
+            var paras = GetCommonQueryParas();
+            var forms = new Dictionary<string, string>();
+            forms.Add("root", "databox");
+            forms.Add("from_path_type", "self");
+            forms.Add("to_path_type", "self");
+            forms.Add("from_path", source);
+            forms.Add("to_path", dest);
+
+            var res = Web.Post("https://jbox.sjtu.edu.cn/v2/fileops/move", paras, headers, forms, true);
+
+            if (res.result == null)
+                throw new Exception(res.message);
+
+            var json = JsonConvert.DeserializeObject<JboxMoveItemInfo>(res.result);
+
+            return json;
+        }
+
+        public static JboxMoveItemInfo DeleteJboxItem(string path)
+        {
+            string reqBodyValue = "{\"pathes\":[{\"root\":\"databox\",\"path\":\"" + path + "\",\"path_type\":\"self\",\"from\":\"\"}],\"ignore_share\":true}";
+
+            var headers = GetCommonHeaders();
+            var paras = GetCommonQueryParas();
+            var forms = new Dictionary<string, string>();
+            forms.Add("json", reqBodyValue);
+
+            var res = Web.Post("https://jbox.sjtu.edu.cn/v2/fileops/batch_delete", paras, headers, forms, true);
+
+            if (res.result == null)
+                throw new Exception(res.message);
+
+            var json = JsonConvert.DeserializeObject<JboxMoveItemInfo>(res.result);
+
+            return json;
+        }
+
+        public static JboxMoveItemInfo DeleteJboxItem(JboxItemInfo item)
+        {
+            return DeleteJboxItem(item.Path);
         }
 
         public static Dictionary<string, string> GetCommonHeaders()

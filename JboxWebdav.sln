@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JboxWebdav.Server.HttpListe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JboxWebdav.ConsoleApp", "JboxWebdav.ConsoleApp\JboxWebdav.ConsoleApp.csproj", "{B095B143-2DE5-4EAA-9BBC-7BF2ED1761A6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebStreamCaching", "WebStreamCaching\WebStreamCaching.csproj", "{6E86BA7C-CB3A-4F9D-BB74-6EED6DFA2394}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebStreamCaching", "WebStreamCaching\WebStreamCaching.csproj", "{6E86BA7C-CB3A-4F9D-BB74-6EED6DFA2394}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JboxWebdav.WpfApp", "JboxWebdav.WpfApp\JboxWebdav.WpfApp.csproj", "{B869D053-65A7-4B39-B5A6-CB947BC99A5A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{6E86BA7C-CB3A-4F9D-BB74-6EED6DFA2394}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6E86BA7C-CB3A-4F9D-BB74-6EED6DFA2394}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6E86BA7C-CB3A-4F9D-BB74-6EED6DFA2394}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B869D053-65A7-4B39-B5A6-CB947BC99A5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B869D053-65A7-4B39-B5A6-CB947BC99A5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B869D053-65A7-4B39-B5A6-CB947BC99A5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B869D053-65A7-4B39-B5A6-CB947BC99A5A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

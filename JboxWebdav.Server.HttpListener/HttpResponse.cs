@@ -44,6 +44,8 @@ namespace NWebDav.Server.HttpListener
             }
         }
 
+        public HttpListenerResponse realResponse => _response;
+
         public Stream Stream => _response.OutputStream;
     }
 }
