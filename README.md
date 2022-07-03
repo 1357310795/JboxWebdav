@@ -3,6 +3,7 @@
 ## 主要功能
 程序对接了Jbox Api和Webdav协议，用户可以通过Webdav协议访问Jbox，借助Rclone可将Jbox挂载为网络磁盘，使用体验接近本地磁盘。
 
+![Topology.png](https://s2.loli.net/2022/07/03/lXygYmUTZKpaVd7.png)
 ![intro-p1.png](https://s2.loli.net/2022/07/03/nQGUeVpHfKYWX92.png)
 ![intro-p2.png](https://s2.loli.net/2022/07/03/D1oG4VvMLRKTzbp.png)
 ![intro-p3.png](https://s2.loli.net/2022/07/03/bivVemC479G2rsS.png)
@@ -23,15 +24,20 @@
 
 ## 下载安装
 1. [点击下载](https://dotnet.microsoft.com/zh-cn/download/dotnet/thank-you/sdk-6.0.301-windows-x86-installer)安装.NET 6.0运行时框架（如果你不知道.NET 6.0是什么）。
-
-2. 在Releases下载程序的可执行文件。
+2. 在[Releases](https://github.com/1357310795/JboxWebdav/releases)下载程序的可执行文件。
 3. 解压、运行程序。
 4. 首次运行，需要安装WinFsp、配置Rclone，完成后即可打开程序。
+
 ![](https://s2.loli.net/2022/07/03/a2JxGDCe9imPUtX.png)
+
 5. 登录Jaccount
+
 ![](https://s2.loli.net/2022/07/03/YXpRmdWC1QHSMrz.png)
+
 6. 直接点击“运行”按钮运行Webdav服务，然后运行Rclone Mount。
+
 ![](https://s2.loli.net/2022/07/03/jNS92TGnDsZ758o.png)
+
 7. 点击最小化程序，可以让程序在后台运行。
 
 ## 安全性说明
