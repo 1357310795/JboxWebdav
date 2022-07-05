@@ -23,7 +23,7 @@
 - 作为Git存储库（超级多的小文件是灾难！）
 
 ## 下载安装
-1. [点击下载](https://dotnet.microsoft.com/zh-cn/download/dotnet/thank-you/sdk-6.0.301-windows-x86-installer)安装.NET 6.0运行时框架（如果你不知道.NET 6.0是什么）。
+1. 点击下载安装.NET 6.0运行时框架（如果你不知道.NET 6.0是什么）：[x86](https://dotnet.microsoft.com/zh-cn/download/dotnet/thank-you/sdk-6.0.301-windows-x86-installer) ,  [x64](https://dotnet.microsoft.com/zh-cn/download/dotnet/thank-you/sdk-6.0.301-windows-x64-installer)。
 2. 在[Releases](https://github.com/1357310795/JboxWebdav/releases)下载程序的可执行文件。
 3. 解压、运行程序。
 4. 首次运行，需要安装WinFsp、配置Rclone，完成后即可打开程序。
