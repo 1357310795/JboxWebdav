@@ -107,7 +107,7 @@ namespace JboxWebdav.WpfApp.Views
             {
                 Info = "配置Rclone";
                 ProcessStartInfo psi = new ProcessStartInfo(basepath + @"Data\rclone-v1.58.1-windows-amd64\rclone.exe");
-                psi.Arguments = "config create jbox webdav url=http://127.0.0.1:11111/ vendor=other --non-interactive";
+                psi.Arguments = "config create jbox webdav url=http://127.0.0.1:65472/ vendor=other --non-interactive";
                 Process p = new Process();
                 p.StartInfo = psi;
                 p.Start();

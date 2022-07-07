@@ -206,7 +206,7 @@ namespace JboxWebdav.WpfApp
 
         private void ReadSettings()
         {
-            IpAddress = IniHelper.GetKeyValue("WpfApp", "IpAddress", "http://127.0.0.1:11111/", IniHelper.inipath);
+            IpAddress = IniHelper.GetKeyValue("WpfApp", "IpAddress", "http://127.0.0.1:65472/", IniHelper.inipath);
             DriveName = IniHelper.GetKeyValue("WpfApp", "DriveName", "MyJbox", IniHelper.inipath);
             int type = int.Parse(IniHelper.GetKeyValue("WpfApp", "DriveType", "1", IniHelper.inipath));
             DriveType = DriveTypes.First(x => x.Id == type);
@@ -244,9 +244,16 @@ namespace JboxWebdav.WpfApp
 
         private void ButtonWebdavStop_Click(object sender, RoutedEventArgs e)
         {
-            WebdavHttpListener.cancellationTokenSource.Cancel();
-            WebdavHttpListener.httpListener.Stop();
-            IsWebdavRunning = false;
+            try
+            {
+                WebdavHttpListener.cancellationTokenSource.Cancel();
+                WebdavHttpListener.httpListener.Stop();
+                IsWebdavRunning = false;
+            }
+            catch (Exception ex)
+            {
+                WebdavMessage = ex.Message;
+            }
         }
 
         private void ButtonWebdavStart_Click(object sender, RoutedEventArgs e)
