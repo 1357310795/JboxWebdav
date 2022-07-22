@@ -244,7 +244,9 @@ namespace NWebDav.Server.Stores
             try
             {
                 // Copy the information to the destination stream
-                JboxService.UploadFile(UriHelper.Combine(_directoryInfo.Path, name), inputStream, length);
+                var res = JboxService.UploadFile(UriHelper.Combine(_directoryInfo.Path, name), inputStream, length);
+                if (!res.success)
+                    return DavStatusCode.Conflict;
                 return DavStatusCode.Ok;
             }
             //catch (IOException ioException) when (ioException.IsJboxFull())

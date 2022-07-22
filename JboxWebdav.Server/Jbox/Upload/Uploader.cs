@@ -35,7 +35,7 @@ namespace JboxWebdav.Server.Jbox.Upload
             if (length > count * 4 * 1024 * 1024)
                 count++;
             current = 0;
-            hashes = new string[count + 2];
+            hashes = new string[count + 10];
         }
 
         public CommonResult Run()

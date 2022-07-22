@@ -59,9 +59,6 @@ namespace NWebDav.Sample.HttpListener
             // Create a request handler factory that uses basic authentication
             var requestHandlerFactory = new RequestHandlerFactory();
 
-            // Create WebDAV dispatcher
-            var homeFolder = @"D:\BaiduNetdiskDownload";
-            //webDavDispatcher = new WebDavDispatcher(new DiskStore(homeFolder), requestHandlerFactory);
             webDavDispatcher = new WebDavDispatcher(new JboxStore(), requestHandlerFactory);
 
             httpListener.BeginGetContext(new AsyncCallback(GetContextCallBack), httpListener);
@@ -83,8 +80,8 @@ namespace NWebDav.Sample.HttpListener
                     IHttpContext httpContext = null;
                     try
                     {
-                        //httpContext = new HttpContext(httpListenerContext);
-                        httpContext = new HttpBasicContext(httpListenerContext, Jac.checkJac);
+                        httpContext = new HttpContext(httpListenerContext);
+                        //httpContext = new HttpBasicContext(httpListenerContext, Jac.checkJac);
                     }
                     catch (Exception ex)
                     {
@@ -107,17 +104,24 @@ namespace NWebDav.Sample.HttpListener
 
         private static void Main(string[] args)
         {
+            Jac.ReadInfo();
+            if (Jac.dic.Count > 0)
+            {
+                var ac = Jac.dic.Keys.First();
+                if (Jac.TryLastCookie(ac))
+                {
+                }
+            }
             // Use the Log4NET adapter for logging
             LoggerFactory.Factory = new ConsoleAdapter();
 
-            Jac.ReadInfo();
 
             // Obtain the HTTP binding settings
             var webdavProtocol =  "http";
             //var webdavIp = "192.168.1.105";
             //var webdavPort = "80";
             var webdavIp = "127.0.0.1";
-            var webdavPort = "11111";
+            var webdavPort = "65472";
 
             using (var httpListener = new System.Net.HttpListener())
             {
@@ -125,7 +129,7 @@ namespace NWebDav.Sample.HttpListener
                 httpListener.Prefixes.Add($"{webdavProtocol}://{webdavIp}:{webdavPort}/");
 
                 // Use basic authentication if requested
-                var webdavUseAuthentication = true;
+                var webdavUseAuthentication = false;
                 if (webdavUseAuthentication)
                 {
                     // Check if HTTPS is enabled

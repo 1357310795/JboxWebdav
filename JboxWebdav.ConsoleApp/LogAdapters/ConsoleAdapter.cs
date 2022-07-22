@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using NWebDav.Server.Logging;
 
 namespace NWebDav.Sample.HttpListener.LogAdapters
