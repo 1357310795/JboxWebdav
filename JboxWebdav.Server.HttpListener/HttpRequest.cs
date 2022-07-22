@@ -22,5 +22,7 @@ namespace NWebDav.Server.HttpListener
         public IEnumerable<string> Headers => _request.Headers.AllKeys;
         public string GetHeaderValue(string header) => _request.Headers[header];
         public Stream Stream => _request.InputStream;
+
+        public long ContentLength => _request.ContentLength64;
     }
 }

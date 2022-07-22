@@ -105,5 +105,7 @@ namespace NWebDav.Server.Http
         /// </para>
         /// </remarks>
         Stream Stream { get; }
+
+        long ContentLength { get; }
     }
 }

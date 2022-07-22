@@ -234,7 +234,7 @@ namespace NWebDav.Server.Stores
             throw new NotImplementedException("Not Supported");
         }
 
-        public async Task<DavStatusCode> UploadFromStreamAsync(IHttpContext httpContext, string name, Stream inputStream)
+        public async Task<DavStatusCode> UploadFromStreamAsync(IHttpContext httpContext, string name, Stream inputStream, long length)
         {
             // Check if the item is writable
             if (!IsWritable)
@@ -244,7 +244,7 @@ namespace NWebDav.Server.Stores
             try
             {
                 // Copy the information to the destination stream
-                JboxService.UploadFile(UriHelper.Combine(_directoryInfo.Path, name), inputStream);
+                JboxService.UploadFile(UriHelper.Combine(_directoryInfo.Path, name), inputStream, length);
                 return DavStatusCode.Ok;
             }
             //catch (IOException ioException) when (ioException.IsJboxFull())

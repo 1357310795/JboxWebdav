@@ -1,6 +1,7 @@
 ﻿using Jbox;
 using Jbox.Models;
 using Jbox.Service;
+using JboxWebdav.Server.Jbox.Upload;
 using Newtonsoft.Json;
 using NutzCode.Libraries.Web;
 using NutzCode.Libraries.Web.StreamProvider;
@@ -182,7 +183,13 @@ namespace JboxWebdav.Server.Jbox
             return json;
         }
 
-        public static bool UploadFile(string path, Stream file)//待优化
+        public static CommonResult UploadFile(string path, Stream file, long length)
+        {
+            Uploader u = new Uploader(path, file, length);
+            return u.Run();
+        }
+
+        public static bool UploadFile_OLD(string path, Stream file, long length)//待优化
         {
             var headers = GetCommonHeaders();
             headers.Add("Origin", "https://jbox.sjtu.edu.cn");

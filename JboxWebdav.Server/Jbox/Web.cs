@@ -100,6 +100,11 @@ namespace Jbox.Service
             #endregion
         }
 
+        public static WebResult Post(string url, Dictionary<string, string> queryparas, Dictionary<string, string> headers, Stream datastream)
+        {
+            return Post(BuildUrl(url, queryparas), headers, datastream);
+        }
+
         public static string BuildUrl(string url, Dictionary<string, string> queryparas)
         {
             StringBuilder builder1 = new StringBuilder();

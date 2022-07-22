@@ -8,6 +8,8 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Windows;
 using System.Windows.Interop;
 
@@ -108,8 +110,8 @@ namespace JboxWebdav.WpfApp
             }
         }
 
-        private List<DriveSymbolItem> driveSymbols;
-        public List<DriveSymbolItem> DriveSymbols
+        private BindingList<DriveSymbolItem> driveSymbols;
+        public BindingList<DriveSymbolItem> DriveSymbols
         {
             get { return driveSymbols; }
             set
@@ -148,6 +150,7 @@ namespace JboxWebdav.WpfApp
             GetFreeDrives();
             ReadSettings();
             ApplyHook();
+            CheckRcloneProcess();
         }
 
         private void Window_StateChanged(object sender, EventArgs e)
@@ -352,6 +355,33 @@ namespace JboxWebdav.WpfApp
             IsRcloneRunning = false;
             RcloneProcess = null;
         }
+
+        private void CheckRcloneProcess()
+        {
+            try
+            {
+                var processes = Process.GetProcesses();
+                RcloneProcess = processes.FirstOrDefault(x => x.ProcessName.ToLower() == "rclone");
+                if (RcloneProcess != null)
+                {
+                    HttpClient wb = new HttpClient();
+                    //wb.Timeout = TimeSpan.FromMilliseconds(500);
+                    //wb.BaseAddress = new Uri("http://localhost:5572/");
+                    var res = wb.PostAsync("http://localhost:5572/mount/listmounts", new StringContent("")).Result;
+                    if (res.IsSuccessStatusCode)
+                    {
+                        var body = res.Content.ReadAsStringAsync().Result;
+                        var dto = System.Text.Json.JsonSerializer.Deserialize<MountDto>(body);
+                        if (dto.mountPoints.Any(x => x.Fs == "jbox"))
+                            IsRcloneRunning = true;
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+        }
         #endregion
 
         #region Device Symbol
@@ -424,7 +454,7 @@ namespace JboxWebdav.WpfApp
         }
         private void GetFreeDrives()
         {
-            DriveSymbols = new List<DriveSymbolItem>();
+            var symbols = new BindingList<DriveSymbolItem>();
             var drives = DriveInfo.GetDrives();
             bool[] t = new bool[26];
             foreach (var d in drives)
@@ -438,13 +468,29 @@ namespace JboxWebdav.WpfApp
                 if (!t[i])
                 {
                     var item = new DriveSymbolItem(((char)(i + 65)).ToString());
-                    DriveSymbols.Add(item);
-                    if (DriveSymbol?.Id == item.Id)
-                        DriveSymbol = item;
+                    symbols.Add(item);
                 }
             }
-            if (DriveSymbol == null)
-                DriveSymbol = DriveSymbols[0];
+            if (DriveSymbols == null)
+            {
+                DriveSymbols = symbols;
+                return;
+            }
+            foreach(var newsymbol in symbols)
+            {
+                if (DriveSymbols.Any(x => x.Id == newsymbol.Id)) 
+                    continue;
+                DriveSymbols.Add(newsymbol);
+            }
+            for (int i = DriveSymbols.Count - 1; i >= 0; i--)
+            {
+                var oldsymbol = DriveSymbols[i];
+                if (symbols.Any(x => x.Id == oldsymbol.Id))
+                    continue;
+                if (DriveSymbol != null && DriveSymbol.Id == oldsymbol.Id)
+                    continue;
+                DriveSymbols.Remove(oldsymbol);
+            }
         }
 
         #endregion

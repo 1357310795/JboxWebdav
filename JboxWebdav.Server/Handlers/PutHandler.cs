@@ -49,7 +49,7 @@ namespace NWebDav.Server.Handlers
             }
 
             // Upload the information to the item
-            var status = await collection.UploadFromStreamAsync(httpContext, splitUri.Name, request.Stream).ConfigureAwait(false);
+            var status = await collection.UploadFromStreamAsync(httpContext, splitUri.Name, request.Stream, request.ContentLength).ConfigureAwait(false);
 
             // Finished writing
             response.SetStatus(status);

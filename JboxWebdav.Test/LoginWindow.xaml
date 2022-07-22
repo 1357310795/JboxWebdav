@@ -1,0 +1,87 @@
+﻿<Window x:Class="JboxWebdav.Test.Views.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:JboxWebdav.Test"
+        xmlns:converters="clr-namespace:Converters"
+        xmlns:ext="clr-namespace:Extensions"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+        Title="Jac登录 - JboxWebdav - v1.0"
+        Width="413" Height="343"
+        Loaded="UserControl_Loaded" WindowStartupLocation="CenterScreen"
+        mc:Ignorable="d">
+    <Grid x:Name="MainGrid">
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Orientation="Vertical">
+            <TextBlock HorizontalAlignment="Center"
+                       Margin="0,10,0,0"
+                       FontSize="28">
+                请登录
+            </TextBlock>
+            <StackPanel HorizontalAlignment="Center" Orientation="Vertical">
+                <StackPanel HorizontalAlignment="Center"
+                            Margin="0,5,0,0"
+                            Orientation="Horizontal">
+                    <materialDesign:PackIcon Width="28" Height="28"
+                                             VerticalAlignment="Bottom"
+                                             Margin="0,0,8,0"
+                                             Kind="Account" />
+                    <TextBox Width="300"
+                             VerticalAlignment="Center"
+                             Text="{Binding Account}"
+                             Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                             materialDesign:HintAssist.FloatingScale="0.70"
+                             materialDesign:HintAssist.Hint="Jaccount账号"
+                             FontSize="16" />
+                </StackPanel>
+                <StackPanel HorizontalAlignment="Center"
+                            Margin="0,10,0,0"
+                            Orientation="Horizontal">
+                    <materialDesign:PackIcon Width="28" Height="28"
+                                             VerticalAlignment="Bottom"
+                                             Margin="0,0,8,0"
+                                             Kind="Key" />
+                    <PasswordBox Width="300"
+                                 VerticalAlignment="Center"
+                                 Style="{StaticResource MaterialDesignFloatingHintPasswordBox}"
+                                 ext:PassWordExtensions.PassWord="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 KeyUp="PasswordBox_KeyUp"
+                                 materialDesign:HintAssist.FloatingScale="0.70"
+                                 materialDesign:HintAssist.Hint="Jaccount密码" Cursor="IBeam"
+                                 FontSize="16">
+                        <i:Interaction.Behaviors>
+                            <ext:PasswordBehavior />
+                        </i:Interaction.Behaviors>
+                    </PasswordBox>
+                </StackPanel>
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                    <CheckBox Margin="5,10" Visibility="Collapsed"
+                              Content="保存登录信息"
+                              IsChecked="{Binding IsSaveInfo}"
+                              Style="{StaticResource MaterialDesignCheckBox}"
+                              FontSize="14" />
+                    <CheckBox Margin="5,10" Visibility="Collapsed"
+                              Content="下次自动登录"
+                              IsChecked="{Binding IsAutoLogin}"
+                              Style="{StaticResource MaterialDesignCheckBox}"
+                              FontSize="14" />
+                </StackPanel>
+                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Top"
+                           Margin="10,10,10,10"
+                           Foreground="Red"
+                           Text="请确定本程序来自于官方发布页面或者自行编译&#13;以免账号密码遭到泄露"
+                           TextAlignment="Center" LineHeight="24"
+                           FontSize="14" />
+                <Button x:Name="AccountLoginButton"
+                        Width="200"
+                        Margin="0,5,0,0"
+                        Content="登录"
+                        Style="{StaticResource MaterialDesignRaisedButton}"
+                        Click="ButtonLogin_Click" />
+            </StackPanel>
+        </StackPanel>
+        <materialDesign:Snackbar x:Name="MainSnackbar" MessageQueue="{materialDesign:MessageQueue}" />
+    </Grid>
+</Window>

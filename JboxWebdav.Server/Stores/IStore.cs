@@ -104,7 +104,7 @@ namespace NWebDav.Server.Stores
 
         Task<IEnumerable<IStoreItem>> GetItemsAsync(IHttpContext httpContext);
         //Upload File
-        Task<DavStatusCode> UploadFromStreamAsync(IHttpContext httpContext, string name, Stream source);
+        Task<DavStatusCode> UploadFromStreamAsync(IHttpContext httpContext, string name, Stream source, long length);
 
         // Create items and collections and add to the collection
         Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, IHttpContext httpContext);
