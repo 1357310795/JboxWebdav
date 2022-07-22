@@ -7,8 +7,8 @@
         xmlns:local="clr-namespace:JboxWebdav.WpfApp"
         xmlns:converters="clr-namespace:JboxWebdav.WpfApp.Converters"
         Title="JboxWebdav - v0.1" Closed="Window_Closed"
-        Width="400" Height="400" StateChanged="Window_StateChanged"
-        Icon="/Resources/jbox.ico" Loaded="Window_Loaded"
+        Width="400" Height="300" StateChanged="Window_StateChanged"
+        Icon="/Resources/jbox-webdav.ico" Loaded="Window_Loaded"
         WindowStartupLocation="CenterScreen"
         mc:Ignorable="d">
     <Window.Resources>
@@ -47,50 +47,6 @@
                        TextWrapping="Wrap" Margin="0,15,0,0"
                        Foreground="Red"
                        Text="{Binding WebdavMessage}"
-                       FontSize="14" FontFamily="Microsoft YaHei UI Light" />
-            <!--Rclone-->
-            <Grid HorizontalAlignment="Left" Margin="0,10,0,0">
-                <Ellipse Width="8" Height="8"
-                         HorizontalAlignment="Left"
-                         Fill="{Binding IsRcloneRunning, Converter={StaticResource IsRunningToColorConverter}}" />
-                <TextBlock Margin="15,2"
-                           Text="Rclone Mount"
-                           FontWeight="Bold"
-                           FontSize="20" />
-            </Grid>
-            <DockPanel Margin="0,5,0,0">
-                <ComboBox MinWidth="80" DisplayMemberPath="Name"
-                          VerticalAlignment="Center" materialDesign:TextFieldAssist.TextBoxViewMargin="4,0,0,0"
-                          ItemsSource="{Binding DriveTypes}"
-                          SelectedItem="{Binding DriveType}"
-                          DockPanel.Dock="Left"
-                          FontSize="14" />
-                <ComboBox MinWidth="50" DisplayMemberPath="Desc"
-                          VerticalAlignment="Center" materialDesign:TextFieldAssist.TextBoxViewMargin="4,0,0,0"
-                          Margin="2,0,0,0"
-                          ItemsSource="{Binding DriveSymbols}"
-                          SelectedItem="{Binding DriveSymbol}"
-                          DockPanel.Dock="Left"
-                          FontSize="14" />
-                <TextBox Margin="2,0,0,0"
-                         Text="{Binding DriveName}"
-                         materialDesign:TextFieldAssist.TextBoxViewMargin="4,0,0,0"
-                         d:Text="MyJbox"
-                         materialDesign:TextFieldAssist.HasClearButton="True"
-                         materialDesign:HintAssist.Hint="分区名"
-                         FontSize="14" />
-            </DockPanel>
-            <StackPanel HorizontalAlignment="Right"
-                        Margin="0,5,0,0"
-                        Orientation="Horizontal">
-                <Button Content="配置" Style="{StaticResource MaterialDesignOutlinedButton}" Click="ButtonRcloneConfig_Click"/>
-                <Button Content="停止" Style="{StaticResource MaterialDesignOutlinedButton}" Click="ButtonRcloneStop_Click"/>
-                <Button Content="启动" Style="{StaticResource MaterialDesignOutlinedButton}" Click="ButtonRcloneStart_Click" Cursor="Hand"/>
-            </StackPanel>
-            <TextBlock HorizontalAlignment="Center"
-                       TextWrapping="Wrap" Margin="0,15,0,0"
-                       Foreground="Red"
-                       Text="{Binding RcloneMessage}"
                        FontSize="14" FontFamily="Microsoft YaHei UI Light" />
         </StackPanel>
     </Grid>

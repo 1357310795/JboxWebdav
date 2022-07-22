@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\jbox-webdav.ico" />
     <None Remove="Resources\jbox.ico" />
   </ItemGroup>
 
@@ -26,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Resources\jbox-webdav.ico" />
     <Resource Include="Resources\jbox.ico" />
   </ItemGroup>
 

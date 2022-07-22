@@ -22,20 +22,6 @@ namespace JboxWebdav.WpfApp
             log4net.Config.XmlConfigurator.Configure();
             ThemeHelper.ChangeHue("#c8161e");
 
-            bool firstrun = bool.Parse(IniHelper.GetKeyValue("WpfApp", "firstrun", "true", IniHelper.inipath));
-            if (firstrun)
-            {
-                if (MessageBox.Show("第一次启动程序，需要安装依赖，点击“是”开始安装", "提示 - JboxWebdav", MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
-                {
-                    var w = new InstallWindow();
-                    App.Current.MainWindow = w;
-                    w.Show();
-                    return;
-                }
-                else
-                    App.Current.Shutdown();
-            }
-
             Jac.ReadInfo();
             if (Jac.dic.Count>0)
             {
