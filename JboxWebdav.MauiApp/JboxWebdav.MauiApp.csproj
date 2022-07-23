@@ -63,6 +63,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\JboxWebdav.Logging\JboxWebdav.Logging.csproj" />
+	  <ProjectReference Include="..\JboxWebdav.Server.HttpListener\JboxWebdav.Server.HttpListener.csproj" />
+	  <ProjectReference Include="..\JboxWebdav.Server\JboxWebdav.Server.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <MauiXaml Update="Pages\LoginPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

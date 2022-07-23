@@ -7,8 +7,8 @@ public partial class WelcomePage : ContentPage
 		InitializeComponent();
 	}
 
-	private void Button_Clicked(object sender, EventArgs e)
+	private async void Button_Clicked(object sender, EventArgs e)
 	{
-		Shell.Current.GoToAsync("LoginPage");
+		await Shell.Current.GoToAsync("LoginPage");
 	}
 }

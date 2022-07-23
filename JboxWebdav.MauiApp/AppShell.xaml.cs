@@ -1,5 +1,6 @@
-﻿
+﻿using Jbox.Service;
 using JboxWebdav.MauiApp.Pages;
+using JboxWebdav.MauiApp.Services;
 
 namespace JboxWebdav.MauiApp
 {
@@ -16,7 +17,21 @@ namespace JboxWebdav.MauiApp
 
         private async void Shell_Loaded(object sender, EventArgs e)
         {
-            
+            Jac.InitStorage(new MauiStorage());
+            Jac.ReadInfo();
+            if (Jac.dic.Count > 0)
+            {
+                var ac = Jac.dic.Keys.First();
+                if (Jac.TryLastCookie(ac))
+                {
+                    await Shell.Current.GoToAsync("MainPage");
+                    return;
+                }
+            }
+            if (Jac.CheckVPN())
+                await Shell.Current.GoToAsync("LoginPage");
+            else
+                await Shell.Current.GoToAsync("NoVPNPage");
         }
     }
 }

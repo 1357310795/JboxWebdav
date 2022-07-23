@@ -1,4 +1,5 @@
 
+using Jbox.Service;
 using System.ComponentModel;
 
 namespace JboxWebdav.MauiApp.Pages;
@@ -13,24 +14,24 @@ public partial class LoginPage : ContentPage, INotifyPropertyChanged
 
     private BackgroundWorker worker;
 
-    //public string Account
-    //{
-    //    get { return Jac.account; }
-    //    set
-    //    {
-    //        Jac.account = value;
-    //        this.RaisePropertyChanged("Account");
-    //    }
-    //}
-    //public string Password
-    //{
-    //    get { return Jac.password; }
-    //    set
-    //    {
-    //        Jac.password = value;
-    //        this.RaisePropertyChanged("Password");
-    //    }
-    //}
+    public string Account
+    {
+        get { return Jac.account; }
+        set
+        {
+            Jac.account = value;
+            this.RaisePropertyChanged("Account");
+        }
+    }
+    public string Password
+    {
+        get { return Jac.password; }
+        set
+        {
+            Jac.password = value;
+            this.RaisePropertyChanged("Password");
+        }
+    }
 
 
     private void AccountLoginButton_Clicked(object sender, EventArgs e)
@@ -64,21 +65,21 @@ public partial class LoginPage : ContentPage, INotifyPropertyChanged
 
     public bool DoLogin()
     {
-        //var res = Jac.Login(Account, Password);
-        //switch (res.state)
-        //{
-        //    case Jac.LoginState.success:
-        //        return true;
-        //    case Jac.LoginState.fail:
-        //        OnRecieveMessage(res.message);
-        //        break;
-        //    case Jac.LoginState.captchafail:
-        //        OnRecieveMessage(res.message);
-        //        break;
-        //    case Jac.LoginState.novpn:
-        //        OnRecieveMessage(res.message);
-        //        break;
-        //}
+        var res = Jac.Login(Account, Password);
+        switch (res.state)
+        {
+            case Jac.LoginState.success:
+                return true;
+            case Jac.LoginState.fail:
+                OnRecieveMessage(res.message);
+                break;
+            case Jac.LoginState.captchafail:
+                OnRecieveMessage(res.message);
+                break;
+            case Jac.LoginState.novpn:
+                OnRecieveMessage(res.message);
+                break;
+        }
         return false;
     }
 

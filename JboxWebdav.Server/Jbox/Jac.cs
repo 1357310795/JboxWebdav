@@ -15,10 +15,15 @@ namespace Jbox.Service
         public static bool islogin;
         public static JboxUserInfo userInfo;
         public static string account, password;
-        public static string configpath = Environment.GetEnvironmentVariable("LocalAppData") + "\\JboxWebdav\\";
+        public static IStorage storage;
 
 
         public static Dictionary<string, JboxCookie> dic = new Dictionary<string, JboxCookie>();
+
+        public static void InitStorage(IStorage storage1)
+        {
+            storage = storage1;
+        }
 
         public static bool CheckVPN()
         {
@@ -402,30 +407,28 @@ namespace Jbox.Service
 
         public static void ReadInfo()
         {
-            if (!File.Exists(configpath + "cookie.json"))
-                return;
-            StreamReader sr = new StreamReader(configpath + "cookie.json");
-            while (!sr.EndOfStream)
+            var cookies = storage.GetKeyValue("cookies", "list", "");
+            var list = cookies.Split(',');
+            foreach(var item in list)
             {
-                var key = sr.ReadLine();
-                var jsonstr = File.ReadAllText(configpath + key + ".json");
-                var json = JsonConvert.DeserializeObject<JboxCookie>(jsonstr);
-                dic.Add(key, json);
+                if (item.Trim() == "")
+                    continue;
+                var account = item.Trim();
+                var cookie = storage.GetKeyValue("cookies", account, "");
+                var json = JsonConvert.DeserializeObject<JboxCookie>(cookie);
+                dic.Add(account, json);
             }
-            sr.Close();
         }
 
         public static void SaveInfo()
         {
-            Directory.CreateDirectory(configpath);
-            StreamWriter sw = new StreamWriter(configpath + "cookie.json");
             foreach (var item in dic)
             {
                 var cookiestr = JsonConvert.SerializeObject(item.Value);
-                File.WriteAllText(configpath + item.Key + ".json", cookiestr);
-                sw.WriteLine(item.Key);
+                storage.SetKeyValue("cookies", item.Key, cookiestr);
             }
-            sw.Close();
+            var list = string.Join(",", dic.Keys);
+            storage.SetKeyValue("cookies", "list", list);
         }
 
         public static bool ValidateLogin()
