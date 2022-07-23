@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="JboxWebdav.MauiApp.Pages.NoVPNPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="无法连接到Jbox">
+    <VerticalStackLayout>
+        <Image Margin="20"
+               Source="novpn.png" VerticalOptions="Center"
+               HorizontalOptions="Center" WidthRequest="200" />
+        <Label Margin="0,20"
+               Text="检测到校外访问，请先拨通学校的VPN，然后重试"
+               VerticalOptions="Center" HorizontalOptions="Center"
+               FontSize="Subtitle" />
+        <Button Margin="0,20"
+                Text="重试"
+                WidthRequest="200" HeightRequest="50"
+                FontSize="Subtitle" />
+    </VerticalStackLayout>
+</ContentPage>
