@@ -280,7 +280,7 @@ namespace NWebDav.Server.Handlers
                 // Add all child collections
                 foreach (var childEntry in await collection.GetItemsAsync(httpContext).ConfigureAwait(false))
                 {
-                    var subUri = UriHelper.Combine(uri, childEntry.Name);
+                    var subUri = UriHelper.Combine(uri, childEntry.Name, childEntry is IStoreCollection);
                     if (childEntry is IStoreCollection subCollection)
                         await AddEntriesAsync(subCollection, depth - 1, httpContext, subUri, entries).ConfigureAwait(false);
                     else

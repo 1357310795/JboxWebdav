@@ -1,5 +1,6 @@
 ﻿using Jbox.Service;
 using JboxWebdav.WpfApp.Helpers;
+using JboxWebdav.WpfApp.Services;
 using JboxWebdav.WpfApp.Views;
 using System;
 using System.Collections.Generic;
@@ -22,6 +23,7 @@ namespace JboxWebdav.WpfApp
             log4net.Config.XmlConfigurator.Configure();
             ThemeHelper.ChangeHue("#c8161e");
 
+            Jac.InitStorage(new WinStorage());
             Jac.ReadInfo();
             if (Jac.dic.Count>0)
             {

@@ -12,12 +12,15 @@ namespace NWebDav.Server.Helpers
             return $"{uriText}/{path}";
         }
 
-        public static Uri Combine(Uri baseUri, string path)
+        public static Uri Combine(Uri baseUri, string path, bool isdir = false)
         {
             var uriText = baseUri.OriginalString;
             if (uriText.EndsWith("/"))
                 uriText = uriText.Substring(0, uriText.Length - 1);
-            return new Uri($"{uriText}/{path}", UriKind.Absolute);
+            if (isdir)
+                return new Uri($"{uriText}/{path}/", UriKind.Absolute);
+            else
+                return new Uri($"{uriText}/{path}", UriKind.Absolute);
         }
 
         public static string ToEncodedString(Uri entryUri)
