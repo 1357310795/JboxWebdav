@@ -20,6 +20,26 @@ namespace Jbox.Service
 
         public static Dictionary<string, JboxCookie> dic = new Dictionary<string, JboxCookie>();
 
+        public static bool CheckVPN()
+        {
+            var url1 = "https://jbox.sjtu.edu.cn/custom-sso-oauth/oauth/pclogin";
+            HttpWebRequest req1 = (HttpWebRequest)WebRequest.Create(url1);
+            AddCommonHeaders(req1);
+
+            HttpWebResponse resp1 = (HttpWebResponse)req1.GetResponse();
+
+            if (resp1.StatusCode != HttpStatusCode.Redirect)
+            {
+                if (resp1.StatusCode == HttpStatusCode.OK)
+                {
+                    var html = Web.GetResponseBody(resp1, resp1.GetResponseStream());
+                    if (html.Contains("校外访问本网站"))
+                        return false;
+                }
+            }
+            return true;
+        }
+
         public static bool checkJac(HttpListenerBasicIdentity identity)
         {
             if (islogin)

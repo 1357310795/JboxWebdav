@@ -13,5 +13,20 @@
         {
             await Shell.Current.GoToAsync("LoginPage");
         }
+
+        private void ButtonWebdavLog_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ButtonWebdavStop_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ButtonWebdavStart_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

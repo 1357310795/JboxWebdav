@@ -1,45 +1,47 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<ContentPage x:Class="JboxWebdav.MauiApp.Pages.LoginPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="JboxWebdav.MauiApp.Pages.LoginPage"
-             Title="LoginPage">
+             Title="JboxWebdav - v0.1-preview">
     <Grid x:Name="MainGrid">
         <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center">
-            <Label HorizontalOptions="Center"
-                       Margin="0,20,0,0"
-                       FontSize="28">
+            <Label Margin="0,-20,0,0"
+                   HorizontalOptions="Center"
+                   FontSize="28">
                 请登录
             </Label>
             <VerticalStackLayout HorizontalOptions="Center">
-                <HorizontalStackLayout HorizontalOptions="Center"
-                            Margin="0,20,0,0">
-                    <Image WidthRequest="28" Height="28"
-                                             VerticalOptions="End"
-                                             Margin="0,0,8,0"/>
-                    <Entry WidthRequest="300" Placeholder="Jaccount账号"
-                             VerticalOptions="Center"
-                             Text="{Binding Account}"
-                             FontSize="16" />
+                <HorizontalStackLayout Margin="0,20,0,0" HorizontalOptions="Center">
+                    <Image HeightRequest="28"
+                           Margin="0,0,8,0"
+                           WidthRequest="28" Source="account.png"
+                           VerticalOptions="Center" />
+                    <Entry Text="{Binding Account}"
+                           WidthRequest="300" Placeholder="Jaccount账号"
+                           VerticalOptions="Center"
+                           FontSize="16" />
                 </HorizontalStackLayout>
-                <HorizontalStackLayout HorizontalOptions="Center"
-                            Margin="0,20,0,0">
-                    <Image WidthRequest="28" Height="28"
-                                             VerticalOptions="End"
-                                             Margin="0,0,8,0"/>
-                    <Entry WidthRequest="300" ClearButtonVisibility="WhileEditing" IsPassword="True" Placeholder="Jaccount密码"
-                                 VerticalOptions="Center"
-                                 FontSize="16">
-                    </Entry>
+                <HorizontalStackLayout Margin="0,20,0,0" HorizontalOptions="Center">
+                    <Image HeightRequest="28"
+                           Margin="0,0,8,0"
+                           WidthRequest="28" Source="key.png"
+                           VerticalOptions="Center" />
+                    <Entry WidthRequest="300" ClearButtonVisibility="WhileEditing"
+                           IsPassword="True" Placeholder="Jaccount密码"
+                           VerticalOptions="Center"
+                           Text="{Binding Password}"
+                           FontSize="16" />
                 </HorizontalStackLayout>
-                <Label HorizontalOptions="Center"
-                           Margin="20"
-                           TextColor="Red" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"
-                           Text="请确定本程序来自于官方发布页面或者自行编译&#13;以免账号密码遭到泄露"
-                           FontSize="14" />
+                <Label Margin="20"
+                       Text="请确定本程序来自于官方发布页面或者自行编译&#13;以免账号密码遭到泄露"
+                       HorizontalOptions="Center" TextColor="Red"
+                       HorizontalTextAlignment="Center"
+                       VerticalTextAlignment="Center"
+                       FontSize="14" />
                 <Button x:Name="AccountLoginButton"
-                        WidthRequest="200"
                         Margin="0,30,0,0"
-                        Text="登录"/>
+                        Text="登录"
+                        WidthRequest="200" Clicked="AccountLoginButton_Clicked" />
             </VerticalStackLayout>
         </VerticalStackLayout>
         <!--<materialDesign:Snackbar x:Name="MainSnackbar" MessageQueue="{materialDesign:MessageQueue}" />-->

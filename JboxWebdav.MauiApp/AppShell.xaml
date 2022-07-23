@@ -3,12 +3,13 @@
     x:Class="JboxWebdav.MauiApp.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:JboxWebdav.MauiApp"
+    xmlns:pages="clr-namespace:JboxWebdav.MauiApp.Pages"
+    xmlns:local="clr-namespace:JboxWebdav.MauiApp" Loaded="Shell_Loaded"
     Shell.FlyoutBehavior="Disabled">
 
     <ShellContent
         Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+        ContentTemplate="{DataTemplate pages:WelcomePage}"
+        Route="route" />
 
 </Shell>

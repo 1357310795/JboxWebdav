@@ -15,7 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JboxWebdav.WpfApp", "JboxWe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JboxWebdav.Test", "JboxWebdav.Test\JboxWebdav.Test.csproj", "{9211EAF0-7411-44B8-93A3-1DB878A370BC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JboxWebdav.MauiApp", "JboxWebdav.MauiApp\JboxWebdav.MauiApp.csproj", "{3E925521-79B2-4433-9BF0-3DC82F64C378}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JboxWebdav.MauiApp", "JboxWebdav.MauiApp\JboxWebdav.MauiApp.csproj", "{3E925521-79B2-4433-9BF0-3DC82F64C378}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JboxWebdav.Logging", "JboxWebdav.Logging\JboxWebdav.Logging.csproj", "{90CCBBEF-6D2F-4873-B4A8-C1D7EF901685}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,6 +55,10 @@ Global
 		{3E925521-79B2-4433-9BF0-3DC82F64C378}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3E925521-79B2-4433-9BF0-3DC82F64C378}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3E925521-79B2-4433-9BF0-3DC82F64C378}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{90CCBBEF-6D2F-4873-B4A8-C1D7EF901685}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90CCBBEF-6D2F-4873-B4A8-C1D7EF901685}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90CCBBEF-6D2F-4873-B4A8-C1D7EF901685}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90CCBBEF-6D2F-4873-B4A8-C1D7EF901685}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

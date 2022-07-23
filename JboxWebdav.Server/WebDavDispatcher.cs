@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Threading.Tasks;
-using log4net;
 using NWebDav.Server.Handlers;
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
