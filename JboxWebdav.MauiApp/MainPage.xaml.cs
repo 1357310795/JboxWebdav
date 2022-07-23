@@ -68,9 +68,9 @@ namespace JboxWebdav.MauiApp
         #endregion
 
         #region Webdav Service
-        private void ButtonWebdavLog_Click(object sender, EventArgs e)
+        private async void ButtonWebdavLog_Click(object sender, EventArgs e)
         {
-
+            await Shell.Current.GoToAsync("LogPage");
         }
 
         private void ButtonWebdavStop_Click(object sender, EventArgs e)

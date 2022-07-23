@@ -3,7 +3,7 @@ using NWebDav.Server.Logging;
 
 namespace JboxWebdav.MauiApp.Services
 {
-    public class Log4NetAdapter : ILoggerFactory
+    public class ListAdapter : ILoggerFactory
     {
         private class Logger : ILogger
         {
@@ -12,6 +12,8 @@ namespace JboxWebdav.MauiApp.Services
             public Logger(Type type)
             {
                 _type = type;
+                if (LogStorage.logs == null)
+                    LogStorage.logs = new List<string>();
             }
 
             public bool IsLogEnabled(LogLevel logLevel) => true;
@@ -19,16 +21,17 @@ namespace JboxWebdav.MauiApp.Services
             public void Log(LogLevel logLevel, Func<string> messageFunc, Exception exception)
             {
                 if (exception == null)
-                {
-                    
-                }
+                    LogStorage.logs.Add($"{_type.Name} - {logLevel} - {messageFunc()}");
                 else
-                {
-                    
-                }
+                    LogStorage.logs.Add($"{_type.Name} - {logLevel} - {messageFunc()}: {exception.Message}");
             }
         }
 
         public ILogger CreateLogger(Type type) => new Logger(type);
+    }
+
+    public static class LogStorage
+    {
+        public static List<string> logs;
     }
 }

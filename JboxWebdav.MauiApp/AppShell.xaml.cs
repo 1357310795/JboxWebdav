@@ -12,6 +12,7 @@ namespace JboxWebdav.MauiApp
             Routing.RegisterRoute(nameof(MainPage), typeof(MainPage));
             Routing.RegisterRoute(nameof(NoVPNPage), typeof(NoVPNPage));
             Routing.RegisterRoute(nameof(LoginPage), typeof(LoginPage));
+            Routing.RegisterRoute(nameof(LogPage), typeof(LogPage));
             //this.AddLogicalChild(new ShellContent() { Title = "MainPage", Content = new MainPage(), Route = "MainPage" });
         }
 

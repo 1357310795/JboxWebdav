@@ -67,7 +67,7 @@ namespace JboxWebdav.MauiApp.Services
 
         public static void Main(string httpPrefix)
         {
-            LoggerFactory.Factory = new Log4NetAdapter();
+            LoggerFactory.Factory = new ListAdapter();
 
             httpListener = new System.Net.HttpListener();
             httpListener.Prefixes.Add(httpPrefix);
