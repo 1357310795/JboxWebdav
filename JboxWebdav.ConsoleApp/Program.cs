@@ -19,41 +19,6 @@ namespace NWebDav.Sample.HttpListener
 
         private static async void DispatchHttpRequestsAsync(System.Net.HttpListener httpListener, CancellationToken cancellationToken)
         {
-            // Create a request handler factory that uses basic authentication
-            var requestHandlerFactory = new RequestHandlerFactory();
-
-            // Create WebDAV dispatcher
-            var homeFolder = @"D:\BaiduNetdiskDownload";
-            var webDavDispatcher = new WebDavDispatcher(new JboxStore(), requestHandlerFactory);
-
-            HttpListenerContext httpListenerContext;
-            try
-            {
-                while (!cancellationToken.IsCancellationRequested)
-                {
-                    httpListenerContext = await httpListener.GetContextAsync().ConfigureAwait(false);
-                    if (httpListenerContext == null)
-                        break;
-                    // Determine the proper HTTP context
-                    IHttpContext httpContext;
-                    if (httpListenerContext.Request.IsAuthenticated)
-                        httpContext = new HttpBasicContext(httpListenerContext, Jac.checkJac);
-                    else
-                        httpContext = new HttpContext(httpListenerContext);
-
-                    // Dispatch the request
-                    await webDavDispatcher.DispatchRequestAsync(httpContext).ConfigureAwait(false);
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex);
-            }
-        }
-
-        private static async void DispatchHttpRequestsAsync1(System.Net.HttpListener httpListener, CancellationToken cancellationToken)
-        {
-            // Create a request handler factory that uses basic authentication
             var requestHandlerFactory = new RequestHandlerFactory();
 
             webDavDispatcher = new WebDavDispatcher(new JboxStore(), requestHandlerFactory);
@@ -138,7 +103,7 @@ namespace NWebDav.Sample.HttpListener
                 httpListener.Start();
 
                 var cancellationTokenSource = new CancellationTokenSource();
-                DispatchHttpRequestsAsync1(httpListener, cancellationTokenSource.Token);
+                DispatchHttpRequestsAsync(httpListener, cancellationTokenSource.Token);
 
                 Console.WriteLine("WebDAV 服务器运行中。按下 x 可以退出，按下 c 进入设置。");
                 while (Console.ReadKey().KeyChar != 'x') ;

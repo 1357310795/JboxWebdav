@@ -187,6 +187,9 @@ namespace NWebDav.Server.Stores
                 // Add all files
                 foreach (var file in _directoryInfo.GetFiles())
                     yield return new JboxStoreItem(LockingManager, file, IsWritable);
+
+                //if (Config.SharedEnabled)
+                //    yield return new JboxSpecialCollection(LockingManager, JboxSpecialCollectionType.Shared);
             }
 
             return Task.FromResult(GetItemsInternal());
@@ -253,7 +256,7 @@ namespace NWebDav.Server.Stores
             //{
             //    return DavStatusCode.InsufficientStorage;
             //}
-            catch (IOException ex)
+            catch (Exception ex)
             {
                 return DavStatusCode.InternalServerError;
             }
@@ -303,8 +306,7 @@ namespace NWebDav.Server.Stores
 
         public bool SupportsFastMove(IStoreCollection destination, string destinationName, bool overwrite, IHttpContext httpContext)
         {
-            // We can only move Jbox-store collections
-            return destination is JboxStoreCollection;
+            return true;
         }
 
         public async Task<StoreItemResult> MoveItemAsync(string sourceName, IStoreCollection destinationCollection, string destinationName, bool overwrite, IHttpContext httpContext)

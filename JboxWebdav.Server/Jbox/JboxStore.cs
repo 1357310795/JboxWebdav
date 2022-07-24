@@ -6,7 +6,7 @@ using NWebDav.Server.Locking;
 
 namespace NWebDav.Server.Stores
 {
-    public class JboxStore : IStore//ok
+    public class JboxStore : IStore
     {
         public JboxStore()
         {

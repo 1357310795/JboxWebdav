@@ -10,6 +10,183 @@ using System.Reflection.Metadata;
 
 namespace JboxWebdav.Server.Jbox
 {
+    public class JboxSharedItemInfo
+    {
+        [JsonProperty("access_mode")]
+        public int AccessMode { get; set; }
+
+        [JsonProperty("bytes")]
+        public long Bytes { get; set; }
+
+        [JsonProperty("client_mtime")]
+        public string ClientMtime { get; set; }
+
+        [JsonProperty("content")]
+        public JboxSharedItemInfo[] Content { get; set; }
+
+        [JsonProperty("content_size")]
+        public long ContentSize { get; set; }
+
+        [JsonProperty("creator")]
+        public string Creator { get; set; }
+
+        [JsonProperty("data_url")]
+        public string DataUrl { get; set; }
+
+        [JsonProperty("delivery_code")]
+        public string DeliveryCode { get; set; }
+
+        [JsonProperty("delivery_creator")]
+        public string DeliveryCreator { get; set; }
+
+        [JsonProperty("delivery_creator_uid")]
+        public long DeliveryCreatorUid { get; set; }
+
+        [JsonProperty("delivery_desc")]
+        public string DeliveryDesc { get; set; }
+
+        [JsonProperty("delivery_mtime")]
+        public string DeliveryMtime { get; set; }
+
+        [JsonProperty("desc")]
+        public string Desc { get; set; }
+
+        [JsonProperty("download_url")]
+        public string DownloadUrl { get; set; }
+
+        [JsonProperty("expiration")]
+        public long Expiration { get; set; }
+
+        [JsonProperty("hash")]
+        public string Hash { get; set; }
+
+        [JsonProperty("is_checked_watermark")]
+        public bool IsCheckedWatermark { get; set; }
+
+        [JsonProperty("is_dir")]
+        public bool IsDir { get; set; }
+
+        [JsonProperty("is_open_watermark")]
+        public bool IsOpenWatermark { get; set; }
+
+        [JsonProperty("is_shared")]
+        public bool IsShared { get; set; }
+
+        [JsonProperty("metadata_url")]
+        public string MetadataUrl { get; set; }
+
+        [JsonProperty("modified")]
+        public DateTime Modified { get; set; }
+
+        [JsonProperty("neid")]
+        public string Neid { get; set; }
+
+        [JsonProperty("nsid")]
+        public long Nsid { get; set; }
+
+        [JsonProperty("path")]
+        public string Path { get; set; }
+
+        [JsonProperty("path_type")]
+        public string PathType { get; set; }
+
+        [JsonProperty("preview_delivery_url")]
+        public string PreviewDeliveryUrl { get; set; }
+
+        [JsonProperty("preview_url")]
+        public string PreviewUrl { get; set; }
+
+        [JsonProperty("result")]
+        public string Result { get; set; }
+
+        [JsonProperty("size")]
+        public long Size { get; set; }
+
+        [JsonProperty("support_preview")]
+        public string SupportPreview { get; set; }
+
+        [JsonProperty("total_size")]
+        public long TotalSize { get; set; }
+
+        [JsonProperty("updator")]
+        public string Updator { get; set; }
+
+        [JsonProperty("upload_url")]
+        public string UploadUrl { get; set; }
+
+        [JsonProperty("watermarkDownloadUrl")]
+        public string WatermarkDownloadUrl { get; set; }
+
+        public bool IsDetailed = true;
+        public bool success
+        {
+            get
+            {
+                return Result == "success";
+            }
+        }
+        internal string GetName()
+        {
+            if (IsDir)
+            {
+                var tmp = Path.Last() == '/' ? Path.Substring(0, Path.Length - 1) : Path;
+                return tmp.Substring(tmp.LastIndexOf("/") + 1);
+            }
+            else
+            {
+                return Path.Substring(Path.LastIndexOf("/") + 1);
+            }
+        }
+
+        internal IEnumerable<JboxSharedItemInfo> GetDirectories()
+        {
+            if (!IsDetailed)
+                MergeResults(JboxService.GetJboxSharedItemInfo(DeliveryCode, Path));
+            foreach (var item in Content)
+            {
+                if (item.IsDir)
+                {
+                    var tmp = item;
+                    tmp.IsDetailed = false;
+                    yield return tmp;
+                }
+            }
+        }
+
+        internal IEnumerable<JboxSharedItemInfo> GetFiles()
+        {
+            if (!IsDetailed)
+                MergeResults(JboxService.GetJboxSharedItemInfo(DeliveryCode, Path));
+            foreach (var item in Content)
+            {
+                if (!item.IsDir)
+                {
+                    var tmp = item;
+                    tmp.IsDetailed = false;
+                    yield return tmp;
+                }
+            }
+        }
+
+        private void MergeResults(JboxSharedItemInfo info)
+        {
+            if (!info.success)
+                return;
+            this.Content = info.Content;
+            this.IsDetailed = true;
+        }
+
+        internal Stream OpenRead()
+        {
+            return JboxService.GetSharedFile(Path, Bytes);
+        }
+
+        internal Stream OpenRead(long start, long end)
+        {
+            return JboxService.GetSharedFile(Path, Bytes, start, end);
+        }
+    }
+
     public class JboxUserInfo
     {
         [JsonProperty("account_id")]
@@ -144,8 +321,6 @@ namespace JboxWebdav.Server.Jbox
 
     public class JboxDirectoryInfo
     {
-        private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(JboxDirectoryInfo));
-
         #region Json Properties
         [JsonProperty("access_mode")]
         public long AccessMode { get; set; }
@@ -484,11 +659,6 @@ namespace JboxWebdav.Server.Jbox
         internal Stream OpenRead(long start, long end)
         {
             return JboxService.GetFile(Path, Bytes, start, end);
-        }
-
-        internal Stream OpenWrite()
-        {
-            throw new NotImplementedException();
         }
     }
 

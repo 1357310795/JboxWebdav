@@ -17,42 +17,7 @@ namespace JboxWebdav.Server.Jbox
     public static class JboxService
     {
         private static WebDataProvider webDataProvider = new WebDataProvider(20, 4 * 1024, 2, 20000);
-        //public static JboxDirectoryInfo GetJboxDirectoryInfo(string path)
-        //{
-        //    var headers = GetCommonHeaders();
-        //    var paras = GetCommonQueryParas();
-        //    var forms = GetCommonBodyForms();
-
-        //    forms.Add("target_path", path);
-
-        //    var res = Web.Post("https://jbox.sjtu.edu.cn/v2/metadata_page/databox",
-        //        paras, headers, forms, true);
-
-        //    if (!res.success)
-        //        throw new Exception(res.result);
-
-        //    var json = JsonConvert.DeserializeObject<JboxDirectoryInfo>(res.result);
-        //    return json;
-        //}
-
-        //public static JboxFileInfo GetJboxFileInfo(string path)
-        //{
-        //    var headers = GetCommonHeaders();
-        //    var paras = GetCommonQueryParas();
-        //    var forms = GetCommonBodyForms();
-
-        //    forms.Add("target_path", path);
-
-        //    var res = Web.Post("https://jbox.sjtu.edu.cn/v2/metadata_page/databox",
-        //        paras, headers, forms, true);
-
-        //    if (!res.success)
-        //        throw new Exception(res.result);
-
-        //    var json = JsonConvert.DeserializeObject<JboxFileInfo>(res.result);
-        //    return json;
-        //}
-
+        
         public static JboxItemInfo GetJboxItemInfo(string path)
         {
             var headers = GetCommonHeaders();
@@ -87,9 +52,56 @@ namespace JboxWebdav.Server.Jbox
             return json;
         }
 
+        public static JboxSharedItemInfo GetJboxSharedItemInfo(string delivery_code, string path)
+        {
+            var headers = GetCommonHeaders();
+            var paras = GetCommonQueryParas();
+            var forms = GetCommonBodyForms();
+
+            forms.Add("page_num", "0");
+
+            var res = Web.Post($"https://jbox.sjtu.edu.cn/v2/delivery/metadata/{delivery_code}{path}",
+                paras, headers, forms, true);
+
+            if (!res.success)
+                throw new Exception(res.result);
+
+            var json = JsonConvert.DeserializeObject<JboxSharedItemInfo>(res.result);
+
+            if (json.success && json.IsDir)
+            {
+                for (int i = 1; i <= (json.ContentSize - 1) / 50; i++)
+                {
+                    forms["page_num"] = i.ToString();
+                    headers = GetCommonHeaders();
+                    var res1 = Web.Post($"https://jbox.sjtu.edu.cn/v2/delivery/metadata/{delivery_code}{path}", paras, headers, forms, true);
+                    if (!res1.success)
+                        throw new Exception(res1.result);
+                    var json1 = JsonConvert.DeserializeObject<JboxSharedItemInfo>(res1.result);
+
+                    MergePageResults(json, json1);
+                }
+            }
+            return json;
+        }
+
+        public static CommonResult UploadToSharedDir(string path, Stream file, long length)
+        {
+            return new CommonResult(false, "");
+        }
+
         private static void MergePageResults(JboxItemInfo info, JboxItemInfo add)
         {
             JboxItemInfo[] c = new JboxItemInfo[info.Content.Length + add.Content.Length];
+
+            Array.Copy(info.Content, 0, c, 0, info.Content.Length);
+            Array.Copy(add.Content, 0, c, info.Content.Length, add.Content.Length);
+
+            info.Content = c;
+        }
+        private static void MergePageResults(JboxSharedItemInfo info, JboxSharedItemInfo add)
+        {
+            JboxSharedItemInfo[] c = new JboxSharedItemInfo[info.Content.Length + add.Content.Length];
 
             Array.Copy(info.Content, 0, c, 0, info.Content.Length);
             Array.Copy(add.Content, 0, c, info.Content.Length, add.Content.Length);
@@ -106,64 +118,9 @@ namespace JboxWebdav.Server.Jbox
             return stream;
         }
 
-        public static Stream GetFile_old(string path, long? start=null, long? end=null)
+        public static Stream GetSharedFile(string path, long length, long? start = null, long? end = null)
         {
-            Dictionary<string, string> h = new Dictionary<string, string>();
-            h.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
-            h.Add("UserAgent", "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/84.0.1312.57 Safari/537.17");
-            h.Add("Content-Type", "application/x-www-form-urlencoded");
-            h.Add("Referer", "https://jbox.sjtu.edu.cn/");
-            h.Add("Accept-Encoding", "gzip, deflate, br");
-            h.Add("Accept-Language", "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7");
-            h.Add("Cookie", Jac.mycookie);
-            if (start != null && end != null)
-            {
-                //x-lenovows-range: bytes=56623104-75497472
-                h.Add("Content-Range", $"bytes={start}-{end}");
-                h.Add("x-lenovows-range", $"bytes={start}-{end}");
-            }
-            
-
-            Dictionary<string, string> q = new Dictionary<string, string>();
-            q.Add("path_type", "self");
-            q.Add("S", Jac.finalS);
-
-            string url = "https://jbox.sjtu.edu.cn:10081/v2/files/databox";
-            url += path.UrlEncodeByParts();
-            StringBuilder builder1 = new StringBuilder();
-            builder1.Append(url);
-
-            if (q.Count > 0)
-            {
-                builder1.Append("?");
-                int i = 0;
-                foreach (var item in q)
-                {
-                    if (i > 0)
-                        builder1.Append("&");
-                    builder1.AppendFormat("{0}={1}", item.Key, item.Value);
-                    i++;
-                }
-            }
-
-            #region 初始化请求
-            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(builder1.ToString());
-            req.Method = "GET";
-            Web.ProcessHeaders(h, req);
-            #endregion
-
-            #region 获取响应
-            try
-            {
-                HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
-                Stream stream = resp.GetResponseStream();
-                return stream;
-            }
-            catch (Exception ex)
-            {
-                return Stream.Null;
-            }
-            #endregion
+            return Stream.Null;
         }
 
         public static JboxCreateDirInfo CreateDirectory(string path)
@@ -187,88 +144,6 @@ namespace JboxWebdav.Server.Jbox
         {
             Uploader u = new Uploader(path, file, length);
             return u.Run();
-        }
-
-        public static bool UploadFile_OLD(string path, Stream file, long length)//待优化
-        {
-            var headers = GetCommonHeaders();
-            headers.Add("Origin", "https://jbox.sjtu.edu.cn");
-            var paras = GetCommonQueryParas();
-            paras.Add("utime", Common.GetTimeStampMilli());
-            paras.Add("t", Common.GetTimeStampMilli());
-            paras.Add("path_type", "self");
-            paras.Add("language", "zh");
-            paras.Add("source", "file");
-            paras.Add("overwrite", "true");
-            paras.Add("X-LENOVO-SESS-ID", Jac.finalSESSID);
-
-            string url = "https://jbox.sjtu.edu.cn:10081/v2/files/databox";
-            url += path.UrlEncodeByParts();
-            url = Web.BuildUrl(url, paras);
-
-            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
-            req.Method = "POST";
-            req.AllowWriteStreamBuffering = false;
-            Web.ProcessHeaders(headers, req);
-
-            #region 处理Form表单请求内容
-            string boundary = "----" + DateTime.Now.Ticks.ToString("x");//分隔符
-            req.ContentType = string.Format("multipart/form-data; boundary={0}", boundary);
-
-            //获取请求流
-            Stream requestStream = req.GetRequestStream();
-
-            //文件数据模板
-            string fileFormHeaderTemplate =
-                "\r\n--" + boundary +
-                "\r\nContent-Disposition: form-data; name=\"{0}\"; filename=\"{1}\"" +
-                "\r\nContent-Type: {2}" +
-                "\r\n\r\n";
-
-            string formdata = null;
-            //上传文件
-            formdata = string.Format(
-                fileFormHeaderTemplate,
-                "file", //表单键
-                path.Substring(path.LastIndexOf("/") + 1),
-                "application/octet-stream");
-
-            //统一处理
-            byte[] formdataBytes = null;
-
-            //第一行不需要换行
-            formdataBytes = Encoding.UTF8.GetBytes(formdata.Substring(2, formdata.Length - 2));
-
-            requestStream.Write(formdataBytes, 0, formdataBytes.Length);
-
-            //写入文件内容
-
-            byte[] buffer = new byte[1024];
-            int bytesRead = 0;
-            while ((bytesRead = file.Read(buffer, 0, buffer.Length)) != 0)
-            {
-                requestStream.Write(buffer, 0, bytesRead);
-                requestStream.Flush();
-            }
-
-            //结尾
-            var footer = Encoding.UTF8.GetBytes("\r\n--" + boundary + "--\r\n");
-            requestStream.Write(footer, 0, footer.Length);
-
-            #endregion
-
-            requestStream.Close();
-            //req.ContentLength = requestStream.Length;
-            
-            try
-            {
-                var res = Web.GetFinalResult(req);
-                return res.success;
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
         }
 
         public static JboxMoveItemInfo MoveJboxItem(string source, string destDir)
