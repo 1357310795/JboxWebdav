@@ -69,6 +69,17 @@ namespace NWebDav.Server.Handlers
             var destinationCollectionUri = UriHelper.GetPathFromUri(splitDestinationUri.CollectionUri);
             var destinationItemUri = UriHelper.Combine(destinationCollectionUri, splitDestinationUri.Name);
 
+            var topfolder = UriHelper.GetTopFolderFromUri(sourceItemUri);
+            if (topfolder == "他人的分享链接")
+            {
+                var sourceCollection = await store.GetCollectionAsync(splitSourceUri.CollectionUri, httpContext).ConfigureAwait(false);
+                var destinationCollection = await store.GetCollectionAsync(splitDestinationUri.CollectionUri, httpContext).ConfigureAwait(false);
+                var result = await sourceCollection.MoveItemAsync(splitSourceUri.Name, destinationCollection, splitDestinationUri.Name, true, httpContext).ConfigureAwait(false);
+
+                response.SetStatus(result.Result);
+                return true;
+            }
+
             JboxMoveItemInfo res = null;
             if (sourceCollectionUri == destinationCollectionUri)
             {

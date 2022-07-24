@@ -188,8 +188,8 @@ namespace NWebDav.Server.Stores
                 foreach (var file in _directoryInfo.GetFiles())
                     yield return new JboxStoreItem(LockingManager, file, IsWritable);
 
-                //if (Config.SharedEnabled)
-                //    yield return new JboxSpecialCollection(LockingManager, JboxSpecialCollectionType.Shared);
+                if (Config.SharedEnabled)
+                    yield return JboxSpecialCollection.getInstance(LockingManager, JboxSpecialCollectionType.Shared);
             }
 
             return Task.FromResult(GetItemsInternal());

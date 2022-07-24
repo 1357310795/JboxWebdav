@@ -214,6 +214,32 @@ namespace NWebDav.Server.Stores
             return Task.FromResult(GetItemsInternal());
         }
 
+        public Task<IStoreItem> GetItemFromPathAsync(string path)
+        {
+            var folders = path.TrimEnd('/').Split('/').ToList();
+            folders.RemoveRange(1,2);
+
+            var top = folders[3];
+
+            var res = GetItemsAsync(null).Result;
+            if (res == null)
+                return Task.FromResult<IStoreItem>(null);
+            var res1 = res.FirstOrDefault(x => x.Name == top);
+            if (res1 == null)
+                return Task.FromResult<IStoreItem>(null);
+
+            if (_model.State==JboxSharedState.ok)
+            {
+                var newpath = string.Join('/', folders);
+                var res2 = JboxService.GetJboxSharedItemInfo(_model.DeliveryCode, newpath);
+                return Task.FromResult<IStoreItem>(new JboxSharedCollection(LockingManager, res2));
+            }
+            else
+            {
+                return Task.FromResult<IStoreItem>(null);
+            }
+        }
+
         public Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, IHttpContext httpContext)
         {
             return Task.FromResult(new StoreItemResult(DavStatusCode.Conflict));

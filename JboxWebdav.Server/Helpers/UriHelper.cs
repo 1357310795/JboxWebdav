@@ -53,5 +53,23 @@ namespace NWebDav.Server.Helpers
             // Return the combined path
             return requestedPath;
         }
+
+        public static string GetTopFolderFromUri(Uri uri)
+        {
+            var folders = uri.LocalPath.Split('/');
+            if (folders.Length >= 2)
+                return folders[1];
+            else
+                return null;
+        }
+
+        public static string GetTopFolderFromUri(string uri)
+        {
+            var folders = uri.Split('/');
+            if (folders.Length >= 2)
+                return folders[1];
+            else
+                return null;
+        }
     }
 }

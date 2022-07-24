@@ -17,6 +17,25 @@ namespace NWebDav.Server.Stores
     {
         private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(JboxSpecialCollection));
         private static readonly XElement s_xDavCollection = new XElement(WebDavNamespaces.DavNs + "collection");
+
+        private static Dictionary<JboxSpecialCollectionType, JboxSpecialCollection> _instance = new Dictionary<JboxSpecialCollectionType, JboxSpecialCollection>();
+        private static readonly object synchronized = new object();
+
+        public static JboxSpecialCollection getInstance(ILockingManager lockingManager, JboxSpecialCollectionType type)
+        {
+            if (_instance.ContainsKey(type))
+            {
+                lock (synchronized)  //加锁防止多线程
+                {
+                    if (_instance.ContainsKey(type))
+                    {
+                        _instance.Add(type, new JboxSpecialCollection(lockingManager, type));
+                    }
+                }
+            }
+            return _instance.GetValueOrDefault(type);
+        }
+
         private readonly JboxSpecialCollectionType _type;
 
         public JboxSpecialCollection(ILockingManager lockingManager, JboxSpecialCollectionType type)
@@ -170,6 +189,28 @@ namespace NWebDav.Server.Stores
             return Task.FromResult(GetItemsInternal());
         }
 
+        public Task<IStoreItem> GetItemFromPathAsync(string path)
+        {
+            var folders = path.TrimEnd('/').Split('/');
+            if (folders.Length == 2)
+                return Task.FromResult<IStoreItem>(this);
+
+            var rootfolder = folders[2];
+
+            var res = GetItemsAsync(null).Result;
+            if (res == null)
+                return Task.FromResult<IStoreItem>(null);
+            var res1 = res.FirstOrDefault(x => x.Name == rootfolder);
+            if (res1 == null)
+                return Task.FromResult<IStoreItem>(null);
+
+            if (folders.Length == 3)
+                return Task.FromResult<IStoreItem>(res1);
+
+            JboxSharedRootCollection rootCollection = (JboxSharedRootCollection)res1;
+            return rootCollection.GetItemFromPathAsync(path);
+        }
+
         public Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, IHttpContext httpContext)
         {
             return Task.FromResult(new StoreItemResult(DavStatusCode.Conflict));
@@ -208,7 +249,7 @@ namespace NWebDav.Server.Stores
 
         public async Task<StoreItemResult> MoveItemAsync(string sourceName, IStoreCollection destinationCollection, string destinationName, bool overwrite, IHttpContext httpContext)
         {
-            if (destinationCollection == this)
+            if (destinationCollection is JboxSpecialCollection specialCollection && specialCollection.Name == this.Name)
             {
                 var list = JboxShared.Get();
                 var item = list.FirstOrDefault(x => x.Name == sourceName);

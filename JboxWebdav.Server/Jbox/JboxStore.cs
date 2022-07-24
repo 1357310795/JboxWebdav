@@ -29,6 +29,15 @@ namespace NWebDav.Server.Stores
         {
             // Determine the path from the uri
             var path = UriHelper.GetPathFromUri(uri);
+            var topfolder = UriHelper.GetTopFolderFromUri(uri);
+
+            if (topfolder == "他人的分享链接")
+            {
+                var specialfolder = JboxSpecialCollection.getInstance(LockingManager, JboxSpecialCollectionType.Shared);
+                return specialfolder.GetItemFromPathAsync(path);
+                //return Task.FromResult<IStoreItem>();
+            }
+                
 
             var res = JboxService.GetJboxItemInfo(path);
             
@@ -54,7 +63,11 @@ namespace NWebDav.Server.Stores
         {
             // Determine the path from the uri
             var path = UriHelper.GetPathFromUri(uri);
+            var topfolder = UriHelper.GetTopFolderFromUri(uri);
 
+            if (topfolder == "他人的分享链接")
+                return Task.FromResult<IStoreCollection>(new JboxSpecialCollection.getInstance(LockingManager, JboxSpecialCollectionType.Shared));
+            
             var res = JboxService.GetJboxItemInfo(path);
 
             if (!res.success || !res.IsDir)
@@ -66,7 +79,5 @@ namespace NWebDav.Server.Stores
             // Return the item
             return Task.FromResult<IStoreCollection>(new JboxStoreCollection(LockingManager, res.ToJboxDirectoryInfo(), IsWritable));
         }
-
-        
     }
 }
