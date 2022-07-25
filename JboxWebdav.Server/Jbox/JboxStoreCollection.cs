@@ -188,7 +188,7 @@ namespace NWebDav.Server.Stores
                 foreach (var file in _directoryInfo.GetFiles())
                     yield return new JboxStoreItem(LockingManager, file, IsWritable);
 
-                if (Config.SharedEnabled)
+                if (Config.SharedEnabled && FullPath == "/")
                     yield return JboxSpecialCollection.getInstance(LockingManager, JboxSpecialCollectionType.Shared);
             }
 
@@ -241,7 +241,7 @@ namespace NWebDav.Server.Stores
         {
             // Check if the item is writable
             if (!IsWritable)
-                return DavStatusCode.Conflict;
+                return DavStatusCode.Forbidden;
 
             // Copy the stream
             try

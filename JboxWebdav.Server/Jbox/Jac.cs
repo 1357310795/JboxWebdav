@@ -16,7 +16,7 @@ namespace Jbox.Service
         public static JboxUserInfo userInfo;
         public static string account, password;
         public static IStorage storage;
-
+        public static string publicKey;
 
         public static Dictionary<string, JboxCookie> dic = new Dictionary<string, JboxCookie>();
 
@@ -339,10 +339,9 @@ namespace Jbox.Service
                 finalS = cc.GetCookies(new Uri("https://" + req8.Host))["S"].Value;
                 finalSESSID = cc.GetCookies(new Uri("https://" + req8.Host))["X-LENOVO-SESS-ID"].Value;
                 mycookie = "S=" + finalS + "; " + "X-LENOVO-SESS-ID=" + finalSESSID;
+                #endregion
 
                 return new LoginResult(LoginState.success, "登录成功！", new JboxCookie(finalS, finalSESSID));
-                //set-cookie: X-LENOVO-SESS-ID=1f658f335cff451daff90f8546ec2e5a; Path=/
-                #endregion
             }
             catch (Exception ex)
             {
@@ -448,6 +447,21 @@ namespace Jbox.Service
                     return false;
                 userInfo = JsonConvert.DeserializeObject<JboxUserInfo>(result.result);
                 islogin = true;
+
+                #region 获取Public Key
+                var res = Web.Get("https://jbox.sjtu.edu.cn/v2/system/get_publickey", new Dictionary<string, string>());
+
+                if (res.code != HttpStatusCode.OK)
+                    return false;
+
+                var regex = new System.Text.RegularExpressions.Regex("-----BEGIN PUBLIC KEY-----(.{216})-----END PUBLIC KEY-----");
+                var match = regex.Match(res.result);
+
+                if (!match.Success)
+                    return false;
+                publicKey = match.Groups[1].Value;
+
+                #endregion
 
                 return true;
             }

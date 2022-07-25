@@ -1,17 +1,22 @@
-﻿using JboxWebdav.Server.Jbox;
+﻿using Jbox;
+using Jbox.Service;
+using JboxWebdav.Server.Jbox;
+using NWebDav.Server;
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Locking;
 using NWebDav.Server.Logging;
 using NWebDav.Server.Props;
+using NWebDav.Server.Stores;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace NWebDav.Server.Stores
+namespace JboxWebdav.Server.Jbox.JboxShared
 {
     public class JboxSharedRootCollection : IStoreCollection
     {
@@ -145,7 +150,7 @@ namespace NWebDav.Server.Stores
         // Jbox collections (a.k.a. directories don't have their own data)
         public Task<Stream> GetReadableStreamAsync(IHttpContext httpContext) => Task.FromResult((Stream)null);
 
-        public Task<Stream> GetReadableStreamAsync(IHttpContext httpContext,long start, long end) => Task.FromResult((Stream)null);
+        public Task<Stream> GetReadableStreamAsync(IHttpContext httpContext, long start, long end) => Task.FromResult((Stream)null);
 
         public IPropertyManager PropertyManager => DefaultPropertyManager;
         public ILockingManager LockingManager { get; }
@@ -187,52 +192,73 @@ namespace NWebDav.Server.Stores
                 switch (_model.State)
                 {
                     case JboxSharedState.invalid:
-                        if (JboxShared.CheckIsValid(_model))
-                        {
-                            var item2 = JboxService.GetJboxSharedItemInfo(_model.DeliveryCode, "/");
-                            yield return new JboxSharedCollection(LockingManager, item2);
-                        }
-                        else
-                            yield return new JboxStaticTxtItem(LockingManager, "/他人的分享链接/", "链接无效.txt", "正文 - 链接无效.txt");
+                        yield return new JboxStaticTxtItem(LockingManager, "/他人的分享链接/", "链接无效.txt", "正文 - 链接无效.txt");
                         break;
                     case JboxSharedState.needpassword:
-                        yield return new JboxStaticTxtItem(LockingManager, "/他人的分享链接/", "需要密码.txt", "正文 - 需要密码.txt");
+                        yield return new JboxSharedPasswordInputItem(LockingManager, "/他人的分享链接/", "需要密码.txt", "请输入密码：");
                         break;
                     case JboxSharedState.expired:
                         yield return new JboxStaticTxtItem(LockingManager, "/他人的分享链接/", "来晚了，该分享已过期！.txt", "正文 - 来晚了，该分享已过期！.txt");
                         break;
                     case JboxSharedState.ok:
-                        var item3 = JboxService.GetJboxSharedItemInfo(_model.DeliveryCode, "/");
-                        yield return new JboxSharedCollection(LockingManager, item3);
+                        var item3 = JboxService.GetJboxSharedItemInfo(_model.DeliveryCode, "/", _model.Token);
+                        if (item3.success)
+                        {
+                            if (item3.IsDir)
+                                yield return new JboxSharedCollection(LockingManager, item3);
+                            else
+                                yield return new JboxSharedItem(LockingManager, item3);
+                        }
+                        else if (item3.Code.Contains("invalid password/token"))
+                        {
+                            _model.State = JboxSharedState.needpassword;
+                            yield return new JboxSharedPasswordInputItem(LockingManager, "/他人的分享链接/", "需要密码.txt", "请输入密码：");
+                        }
+                        else if (item3.Code.Contains("expired"))
+                        {
+                            _model.State = JboxSharedState.expired;
+                            yield return new JboxStaticTxtItem(LockingManager, "/他人的分享链接/", "来晚了，该分享已过期！.txt", "正文 - 来晚了，该分享已过期！.txt");
+                        }
+                        else
+                        {
+                            _model.State = JboxSharedState.error;
+                            yield return new JboxStaticTxtItem(LockingManager, "/他人的分享链接/", "链接无效.txt", "正文 - 链接无效.txt");
+                        }
                         break;
                     case JboxSharedState.error:
                         yield return new JboxStaticTxtItem(LockingManager, "/他人的分享链接/", "链接无效.txt", "正文 - 链接无效.txt");
                         break;
                 }
             }
-            
+            if (_model.State == JboxSharedState.invalid)
+                JboxShared.CheckIsValid(_model);
             return Task.FromResult(GetItemsInternal());
         }
 
         public Task<IStoreItem> GetItemFromPathAsync(string path)
         {
             var folders = path.TrimEnd('/').Split('/').ToList();
-            folders.RemoveRange(1,2);
+            folders.RemoveRange(1, 2);
 
-            var top = folders[3];
-
+            var top = folders[1];
             var res = GetItemsAsync(null).Result;
             if (res == null)
                 return Task.FromResult<IStoreItem>(null);
             var res1 = res.FirstOrDefault(x => x.Name == top);
             if (res1 == null)
                 return Task.FromResult<IStoreItem>(null);
+            if (folders.Count == 2)
+                return Task.FromResult(res1);
 
-            if (_model.State==JboxSharedState.ok)
+            if (_model.State == JboxSharedState.ok)
             {
+                folders.RemoveAt(1);
                 var newpath = string.Join('/', folders);
-                var res2 = JboxService.GetJboxSharedItemInfo(_model.DeliveryCode, newpath);
-                return Task.FromResult<IStoreItem>(new JboxSharedCollection(LockingManager, res2));
+                var res2 = JboxService.GetJboxSharedItemInfo(_model.DeliveryCode, newpath, _model.Token);
+                if (res2.IsDir)
+                    return Task.FromResult<IStoreItem>(new JboxSharedCollection(LockingManager, res2));
+                else
+                    return Task.FromResult<IStoreItem>(new JboxSharedItem(LockingManager, res2));
             }
             else
             {
@@ -240,19 +266,75 @@ namespace NWebDav.Server.Stores
             }
         }
 
+        public Task<IStoreCollection> GetCollectionFromPathAsync(string path)
+        {
+            var folders = path.TrimEnd('/').Split('/').ToList();
+            folders.RemoveRange(1, 2);
+
+            var top = folders[1];
+            var res = GetItemsAsync(null).Result;
+            if (res == null)
+                return Task.FromResult<IStoreCollection>(null);
+            var res1 = res.FirstOrDefault(x => x.Name == top);
+            if (res1 == null)
+                return Task.FromResult<IStoreCollection>(null);
+            if (folders.Count == 2)
+                return Task.FromResult<IStoreCollection>(res1 as IStoreCollection);
+
+            if (_model.State == JboxSharedState.ok)
+            {
+                folders.RemoveAt(1);
+                var newpath = string.Join('/', folders);
+                var res2 = JboxService.GetJboxSharedItemInfo(_model.DeliveryCode, newpath, _model.Token);
+                if (res2.IsDir)
+                    return Task.FromResult<IStoreCollection>(new JboxSharedCollection(LockingManager, res2));
+                else
+                    return Task.FromResult<IStoreCollection>(null);
+            }
+            else
+            {
+                return Task.FromResult<IStoreCollection>(null);
+            }
+        }
+
         public Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, IHttpContext httpContext)
         {
-            return Task.FromResult(new StoreItemResult(DavStatusCode.Conflict));
+            return Task.FromResult(new StoreItemResult(DavStatusCode.Forbidden));
         }
 
         public async Task<DavStatusCode> UploadFromStreamAsync(IHttpContext httpContext, string name, Stream inputStream, long length)
         {
-            return DavStatusCode.Conflict;
+            if (_model.State == JboxSharedState.needpassword && name == "需要密码.txt")
+            {
+                var sr = new StreamReader(inputStream);
+                var content = sr.ReadToEnd();
+                var regex = new Regex("请输入密码：([0-9a-zA-Z]{4})");
+                var match = regex.Match(content);
+                if (match.Success)
+                {
+                    var password = match.Groups[1].Value;
+                    var password_enc = Common.RSAEncrypt(Jac.publicKey, password);
+                    var tokenres = JboxService.GetDeliveryAuthToken(_model.DeliveryCode, password_enc);
+                    if (tokenres.success)
+                    {
+                        _model.Token = tokenres.result;
+                        _model.State = JboxSharedState.ok;
+                        JboxShared.Save();
+                        return DavStatusCode.Ok;
+                    }
+                    else
+                        return DavStatusCode.Ok;
+                }
+                else
+                    return DavStatusCode.Ok;
+            }
+            else
+                return DavStatusCode.Forbidden;
         }
 
         public Task<StoreCollectionResult> CreateCollectionAsync(string name, bool overwrite, IHttpContext httpContext)
         {
-            return Task.FromResult(new StoreCollectionResult(DavStatusCode.Conflict));
+            return Task.FromResult(new StoreCollectionResult(DavStatusCode.Forbidden));
         }
 
         public async Task<StoreItemResult> CopyAsync(IStoreCollection destinationCollection, string name, bool overwrite, IHttpContext httpContext)
@@ -366,7 +448,7 @@ namespace NWebDav.Server.Stores
 
         public Task<DavStatusCode> DeleteItemAsync(string name, IHttpContext httpContext)
         {
-            return Task.FromResult(DavStatusCode.Conflict);
+            return Task.FromResult(DavStatusCode.Forbidden);
         }
 
         public InfiniteDepthMode InfiniteDepthMode => InfiniteDepthMode.Assume1;

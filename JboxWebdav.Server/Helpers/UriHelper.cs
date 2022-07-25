@@ -71,5 +71,13 @@ namespace NWebDav.Server.Helpers
             else
                 return null;
         }
+
+        public static string RemoveTopFolder(string path)
+        {
+            var folders = path.Split('/').ToList();
+            if (folders.Count >= 2)
+                folders.RemoveAt(1);
+            return String.Join('/', folders);
+        }
     }
 }

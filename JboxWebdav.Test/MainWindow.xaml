@@ -11,6 +11,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
         <DockPanel  Margin="0,5">
@@ -21,6 +22,7 @@
             <TextBlock Text="远程位置："/>
             <TextBox Text="{Binding UploadPath}"/>
         </DockPanel>
-        <Button Grid.Row="2" Content="Go" Height="40" Width="200" Click="Button_Click"/>
+        <TextBox Grid.Row="2" Text="{Binding Data}"/>
+        <Button Grid.Row="3" Content="Go" Height="40" Width="200" Click="Button_Click"/>
     </Grid>
 </Window>

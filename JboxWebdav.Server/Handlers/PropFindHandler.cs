@@ -85,7 +85,7 @@ namespace NWebDav.Server.Handlers
             {
                 // Determine depth
                 var depth = request.GetDepth();
-
+                //s_log.Log(LogLevel.Debug, () => $"【Depth:{depth}】");
                 // Check if the collection supports Infinite depth for properties
                 if (depth > 1)
                 {

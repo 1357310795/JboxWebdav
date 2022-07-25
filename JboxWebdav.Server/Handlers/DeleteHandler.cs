@@ -50,6 +50,14 @@ namespace NWebDav.Server.Handlers
             // Obtain the item that actually is deleted
             var deleteItemUri = UriHelper.Combine(parentCollectionUri, splitUri.Name);
 
+            var topfolder = UriHelper.GetTopFolderFromUri(deleteItemUri);
+
+            if (topfolder == "他人的分享链接")
+            {
+                response.SetStatus(DavStatusCode.Forbidden);
+                return true;
+            }
+
             // Delete item
             JboxMoveItemInfo res = null;
             res = JboxService.DeleteJboxItem(deleteItemUri);

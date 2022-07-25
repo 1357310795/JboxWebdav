@@ -1,34 +1,32 @@
 ﻿using JboxWebdav.Server.Jbox;
+using NWebDav.Server;
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Locking;
 using NWebDav.Server.Logging;
 using NWebDav.Server.Props;
+using NWebDav.Server.Stores;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace NWebDav.Server.Stores
+namespace JboxWebdav.Server.Jbox.JboxShared
 {
-    public class JboxStaticTxtItem : IStoreItem
+    public class JboxSharedItem : IStoreItem
     {
-        private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(JboxStaticTxtItem));
-        private readonly string _name;
-        private readonly byte[] _content;
-        private readonly string _path;
+        private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(JboxSharedItem));
+        private readonly JboxSharedItemInfo _fileInfo;
 
-        public JboxStaticTxtItem(ILockingManager lockingManager, string path, string name, string content)
+        public JboxSharedItem(ILockingManager lockingManager, JboxSharedItemInfo fileInfo)
         {
             LockingManager = lockingManager;
-            _name = name;
-            _path = path;
-            _content = Encoding.Default.GetBytes(content);
+            _fileInfo = fileInfo;
+            IsWritable = _fileInfo.AccessMode.CheckAccess(JboxAccessMode.upload);
         }
 
-        public static PropertyManager<JboxStaticTxtItem> DefaultPropertyManager { get; } = new PropertyManager<JboxStaticTxtItem>(new DavProperty<JboxStaticTxtItem>[]
+        public static PropertyManager<JboxSharedItem> DefaultPropertyManager { get; } = new PropertyManager<JboxSharedItem>(new DavProperty<JboxSharedItem>[]
         {
             // RFC-2518 properties
             //new DavCreationDate<JboxStoreItem>
@@ -40,38 +38,39 @@ namespace NWebDav.Server.Stores
             //        return DavStatusCode.Ok;
             //    }
             //},
-            new DavDisplayName<JboxStaticTxtItem>
+            new DavDisplayName<JboxSharedItem>
             {
-                Getter = (context, item) => item._name
+                Getter = (context, item) => item._fileInfo.GetName()
             },
-            new DavGetContentLength<JboxStaticTxtItem>
+            new DavGetContentLength<JboxSharedItem>
             {
-                Getter = (context, item) => item._content.Length
+                Getter = (context, item) => item._fileInfo.Bytes
             },
-            new DavGetContentType<JboxStaticTxtItem>
+            new DavGetContentType<JboxSharedItem>
             {
                 Getter = (context, item) => item.DetermineContentType()
             },
-            new DavGetEtag<JboxStaticTxtItem>
+            new DavGetEtag<JboxSharedItem>
             {
                 Getter = (context, item) => item.CalculateEtag()
             },
-            new DavGetLastModified<JboxStaticTxtItem>
+            new DavGetLastModified<JboxSharedItem>
             {
-                Getter = (context, item) => DateTime.Now,
+                Getter = (context, item) => item._fileInfo.Modified,
                 Setter = (context, item, value) =>
                 {
+                    item._fileInfo.Modified = value;
                     return DavStatusCode.Ok;
                 }
             },
-            new DavGetResourceType<JboxStaticTxtItem>
+            new DavGetResourceType<JboxSharedItem>
             {
                 Getter = (context, item) => null
             },
 
             // Default locking property handling via the LockingManager
             //new DavLockDiscoveryDefault<JboxStoreItem>(),
-            new DavSupportedLockDefault<JboxStaticTxtItem>(),
+            new DavSupportedLockDefault<JboxSharedItem>(),
 
             // Hopmann/Lippert collection properties
             // (although not a collection, the IsHidden property might be valuable)
@@ -108,52 +107,53 @@ namespace NWebDav.Server.Stores
             //        return DavStatusCode.Ok;
             //    }
             //},
-            new Win32FileAttributes<JboxStaticTxtItem>
-            {
-                Getter = (context, item) => FileAttributes.ReadOnly,
-                Setter = (context, item, value) =>
-                {
-                    return DavStatusCode.Ok;
-                }
-            }
+            //new Win32FileAttributes<JboxStoreItem>
+            //{
+            //    Getter = (context, item) => item._fileInfo.Attributes,
+            //    Setter = (context, item, value) =>
+            //    {
+            //        item._fileInfo.Attributes = value;
+            //        return DavStatusCode.Ok;
+            //    }
+            //}
         });
 
         public bool IsWritable { get; }
-        public string Name => _name;
-        public string UniqueKey => _name;
-        public string FullPath => UriHelper.Combine(_path, _name);
-        public Task<Stream> GetReadableStreamAsync(IHttpContext httpContext) => Task.FromResult((Stream)new MemoryStream(_content));
+        public string Name => _fileInfo.GetName();
+        public string UniqueKey => _fileInfo.Path;
+        public string FullPath => _fileInfo.Path;
+        public Task<Stream> GetReadableStreamAsync(IHttpContext httpContext) => Task.FromResult(_fileInfo.OpenRead());
 
-        public Task<Stream> GetReadableStreamAsync(IHttpContext httpContext, long start, long end) => Task.FromResult((Stream)new SubStream(new MemoryStream(_content), start, end));
+        public Task<Stream> GetReadableStreamAsync(IHttpContext httpContext, long start, long end) => Task.FromResult(_fileInfo.OpenRead(start, end));
 
         public IPropertyManager PropertyManager => DefaultPropertyManager;
         public ILockingManager LockingManager { get; }
 
         public async Task<StoreItemResult> CopyAsync(IStoreCollection destination, string name, bool overwrite, IHttpContext httpContext)
         {
-            return new StoreItemResult(DavStatusCode.Forbidden);
+            throw new NotImplementedException("Not Supported");
         }
 
         public override int GetHashCode()
         {
-            return _name.GetHashCode();
+            return _fileInfo.Path.GetHashCode();
         }
 
         public override bool Equals(object obj)
         {
-            if (!(obj is JboxStaticTxtItem item))
+            if (!(obj is JboxSharedItem storeItem))
                 return false;
-            return item._path.Equals(_path, StringComparison.CurrentCultureIgnoreCase);
+            return storeItem._fileInfo.Path.Equals(_fileInfo.Path, StringComparison.CurrentCultureIgnoreCase);
         }
 
         private string DetermineContentType()
         {
-            return "doc/.txt";
+            return MimeTypeHelper.GetMimeType(_fileInfo.MimeType);
         }
 
         private string CalculateEtag()
         {
-            return "\"" + GetHashCode() + "\"";
+            return "\"" + _fileInfo.Hash + "\"";
         }
     }
 }

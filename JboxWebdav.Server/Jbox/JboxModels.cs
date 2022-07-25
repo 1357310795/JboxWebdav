@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Reflection.Metadata;
+using NWebDav.Server.Helpers;
 
 namespace JboxWebdav.Server.Jbox
 {
@@ -20,6 +21,9 @@ namespace JboxWebdav.Server.Jbox
 
         [JsonProperty("client_mtime")]
         public string ClientMtime { get; set; }
+
+        [JsonProperty("code")]
+        public string Code { get; set; }
 
         [JsonProperty("content")]
         public JboxSharedItemInfo[] Content { get; set; }
@@ -75,6 +79,9 @@ namespace JboxWebdav.Server.Jbox
         [JsonProperty("metadata_url")]
         public string MetadataUrl { get; set; }
 
+        [JsonProperty("mime_type")]
+        public string MimeType { get; set; }
+
         [JsonProperty("modified")]
         public DateTime Modified { get; set; }
 
@@ -100,7 +107,7 @@ namespace JboxWebdav.Server.Jbox
         public string Result { get; set; }
 
         [JsonProperty("size")]
-        public long Size { get; set; }
+        public string Size { get; set; }
 
         [JsonProperty("support_preview")]
         public string SupportPreview { get; set; }
@@ -117,12 +124,16 @@ namespace JboxWebdav.Server.Jbox
         [JsonProperty("watermarkDownloadUrl")]
         public string WatermarkDownloadUrl { get; set; }
 
+        [JsonProperty("type")]
+        public string Type { get; set; }
+
+        public string Token { get; set; }
         public bool IsDetailed = true;
         public bool success
         {
             get
             {
-                return Result == "success";
+                return Type != "error";
             }
         }
         internal string GetName()
@@ -141,7 +152,7 @@ namespace JboxWebdav.Server.Jbox
         internal IEnumerable<JboxSharedItemInfo> GetDirectories()
         {
             if (!IsDetailed)
-                MergeResults(JboxService.GetJboxSharedItemInfo(DeliveryCode, Path));
+                MergeResults(JboxService.GetJboxSharedItemInfo(DeliveryCode, UriHelper.RemoveTopFolder(Path), Token));
             foreach (var item in Content)
             {
                 if (item.IsDir)
@@ -156,7 +167,7 @@ namespace JboxWebdav.Server.Jbox
         internal IEnumerable<JboxSharedItemInfo> GetFiles()
         {
             if (!IsDetailed)
-                MergeResults(JboxService.GetJboxSharedItemInfo(DeliveryCode, Path));
+                MergeResults(JboxService.GetJboxSharedItemInfo(DeliveryCode, UriHelper.RemoveTopFolder(Path), Token));
             foreach (var item in Content)
             {
                 if (!item.IsDir)
@@ -178,12 +189,12 @@ namespace JboxWebdav.Server.Jbox
 
         internal Stream OpenRead()
         {
-            return JboxService.GetSharedFile(Path, Bytes);
+            return JboxService.GetSharedFile(this);
         }
 
         internal Stream OpenRead(long start, long end)
         {
-            return JboxService.GetSharedFile(Path, Bytes, start, end);
+            return JboxService.GetSharedFile(this, start, end);
         }
     }
 
@@ -959,5 +970,10 @@ namespace JboxWebdav.Server.Jbox
                 return Result == "success";
             }
         }
+    }
+
+    public class JboxDeliveryAuthDto
+    {
+        public string token { get; set; }
     }
 }

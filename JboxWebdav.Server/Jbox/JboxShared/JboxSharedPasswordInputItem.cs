@@ -1,4 +1,5 @@
 ﻿using JboxWebdav.Server.Jbox;
+using JboxWebdav.Server.Jbox.JboxShared;
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Locking;
@@ -13,22 +14,24 @@ using System.Threading.Tasks;
 
 namespace NWebDav.Server.Stores
 {
-    public class JboxStaticTxtItem : IStoreItem
+    public class JboxSharedPasswordInputItem : IStoreItem
     {
         private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(JboxStaticTxtItem));
         private readonly string _name;
         private readonly byte[] _content;
         private readonly string _path;
+        //private readonly JboxSharedModel _model;
 
-        public JboxStaticTxtItem(ILockingManager lockingManager, string path, string name, string content)
+        public JboxSharedPasswordInputItem(ILockingManager lockingManager, string path, string name, string content)
         {
             LockingManager = lockingManager;
             _name = name;
             _path = path;
+            //_model = model;
             _content = Encoding.Default.GetBytes(content);
         }
 
-        public static PropertyManager<JboxStaticTxtItem> DefaultPropertyManager { get; } = new PropertyManager<JboxStaticTxtItem>(new DavProperty<JboxStaticTxtItem>[]
+        public static PropertyManager<JboxSharedPasswordInputItem> DefaultPropertyManager { get; } = new PropertyManager<JboxSharedPasswordInputItem>(new DavProperty<JboxSharedPasswordInputItem>[]
         {
             // RFC-2518 properties
             //new DavCreationDate<JboxStoreItem>
@@ -40,23 +43,23 @@ namespace NWebDav.Server.Stores
             //        return DavStatusCode.Ok;
             //    }
             //},
-            new DavDisplayName<JboxStaticTxtItem>
+            new DavDisplayName<JboxSharedPasswordInputItem>
             {
                 Getter = (context, item) => item._name
             },
-            new DavGetContentLength<JboxStaticTxtItem>
+            new DavGetContentLength<JboxSharedPasswordInputItem>
             {
                 Getter = (context, item) => item._content.Length
             },
-            new DavGetContentType<JboxStaticTxtItem>
+            new DavGetContentType<JboxSharedPasswordInputItem>
             {
                 Getter = (context, item) => item.DetermineContentType()
             },
-            new DavGetEtag<JboxStaticTxtItem>
+            new DavGetEtag<JboxSharedPasswordInputItem>
             {
                 Getter = (context, item) => item.CalculateEtag()
             },
-            new DavGetLastModified<JboxStaticTxtItem>
+            new DavGetLastModified<JboxSharedPasswordInputItem>
             {
                 Getter = (context, item) => DateTime.Now,
                 Setter = (context, item, value) =>
@@ -64,14 +67,14 @@ namespace NWebDav.Server.Stores
                     return DavStatusCode.Ok;
                 }
             },
-            new DavGetResourceType<JboxStaticTxtItem>
+            new DavGetResourceType<JboxSharedPasswordInputItem>
             {
                 Getter = (context, item) => null
             },
 
             // Default locking property handling via the LockingManager
             //new DavLockDiscoveryDefault<JboxStoreItem>(),
-            new DavSupportedLockDefault<JboxStaticTxtItem>(),
+            new DavSupportedLockDefault<JboxSharedPasswordInputItem>(),
 
             // Hopmann/Lippert collection properties
             // (although not a collection, the IsHidden property might be valuable)
@@ -108,14 +111,14 @@ namespace NWebDav.Server.Stores
             //        return DavStatusCode.Ok;
             //    }
             //},
-            new Win32FileAttributes<JboxStaticTxtItem>
-            {
-                Getter = (context, item) => FileAttributes.ReadOnly,
-                Setter = (context, item, value) =>
-                {
-                    return DavStatusCode.Ok;
-                }
-            }
+            //new Win32FileAttributes<JboxStaticTxtItem>
+            //{
+            //    Getter = (context, item) => FileAttributes.ReadOnly,
+            //    Setter = (context, item, value) =>
+            //    {
+            //        return DavStatusCode.Ok;
+            //    }
+            //}
         });
 
         public bool IsWritable { get; }
@@ -141,7 +144,7 @@ namespace NWebDav.Server.Stores
 
         public override bool Equals(object obj)
         {
-            if (!(obj is JboxStaticTxtItem item))
+            if (!(obj is JboxSharedPasswordInputItem item))
                 return false;
             return item._path.Equals(_path, StringComparison.CurrentCultureIgnoreCase);
         }

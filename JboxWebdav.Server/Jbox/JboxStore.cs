@@ -3,11 +3,13 @@ using JboxWebdav.Server.Jbox;
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Locking;
+using NWebDav.Server.Logging;
 
 namespace NWebDav.Server.Stores
 {
     public class JboxStore : IStore
     {
+        private static ILogger s_log = LoggerFactory.CreateLogger(typeof(JboxStore));
         public JboxStore()
         {
             IsWritable = true;
@@ -27,6 +29,13 @@ namespace NWebDav.Server.Stores
 
         public Task<IStoreItem> GetItemAsync(Uri uri, IHttpContext httpContext)
         {
+            var res = GetItemAsyncInternal(uri).Result;
+            //s_log.Log(LogLevel.Debug, () => $"【{(res?.GetType())}】路径 {uri.ToString()}");
+            return Task.FromResult(res);
+        }
+
+        private Task<IStoreItem> GetItemAsyncInternal(Uri uri)
+        {
             // Determine the path from the uri
             var path = UriHelper.GetPathFromUri(uri);
             var topfolder = UriHelper.GetTopFolderFromUri(uri);
@@ -37,10 +46,10 @@ namespace NWebDav.Server.Stores
                 return specialfolder.GetItemFromPathAsync(path);
                 //return Task.FromResult<IStoreItem>();
             }
-                
+
 
             var res = JboxService.GetJboxItemInfo(path);
-            
+
             if (!res.success)
             {
                 // The item doesn't exist
@@ -61,13 +70,24 @@ namespace NWebDav.Server.Stores
 
         public Task<IStoreCollection> GetCollectionAsync(Uri uri, IHttpContext httpContext)
         {
+            var res = GetCollectionInternal(uri).Result;
+            //s_log.Log(LogLevel.Debug, () => $"【{(res?.GetType())}】路径 {uri.ToString()}");
+            return Task.FromResult(res);
+        }
+
+        private Task<IStoreCollection> GetCollectionInternal(Uri uri)
+        {
             // Determine the path from the uri
             var path = UriHelper.GetPathFromUri(uri);
             var topfolder = UriHelper.GetTopFolderFromUri(uri);
 
             if (topfolder == "他人的分享链接")
-                return Task.FromResult<IStoreCollection>(new JboxSpecialCollection.getInstance(LockingManager, JboxSpecialCollectionType.Shared));
-            
+            {
+                var specialfolder = JboxSpecialCollection.getInstance(LockingManager, JboxSpecialCollectionType.Shared);
+                return specialfolder.GetCollectionFromPathAsync(path);
+                //return Task.FromResult<IStoreItem>();
+            }
+
             var res = JboxService.GetJboxItemInfo(path);
 
             if (!res.success || !res.IsDir)

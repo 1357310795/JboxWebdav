@@ -1,4 +1,5 @@
 ﻿using JboxWebdav.Server.Jbox;
+using JboxWebdav.Server.Jbox.JboxShared;
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Locking;
@@ -23,17 +24,17 @@ namespace NWebDav.Server.Stores
 
         public static JboxSpecialCollection getInstance(ILockingManager lockingManager, JboxSpecialCollectionType type)
         {
-            if (_instance.ContainsKey(type))
+            if (!_instance.ContainsKey(type))
             {
                 lock (synchronized)  //加锁防止多线程
                 {
-                    if (_instance.ContainsKey(type))
+                    if (!_instance.ContainsKey(type))
                     {
                         _instance.Add(type, new JboxSpecialCollection(lockingManager, type));
                     }
                 }
             }
-            return _instance.GetValueOrDefault(type);
+            return _instance[type];
         }
 
         private readonly JboxSpecialCollectionType _type;
@@ -144,12 +145,11 @@ namespace NWebDav.Server.Stores
             //        return DavStatusCode.Ok;
             //    }
             //},
-            //new Win32FileAttributes<JboxStoreCollection>
+            //new Win32FileAttributes<JboxSpecialCollection>
             //{
-            //    Getter = (context, collection) => collection._directoryInfo.Attributes,
+            //    Getter = (context, collection) => FileAttributes.ReadOnly,
             //    Setter = (context, collection, value) =>
             //    {
-            //        collection._directoryInfo.Attributes = value;
             //        return DavStatusCode.Ok;
             //    }
             //}
@@ -211,14 +211,36 @@ namespace NWebDav.Server.Stores
             return rootCollection.GetItemFromPathAsync(path);
         }
 
+        public Task<IStoreCollection> GetCollectionFromPathAsync(string path)
+        {
+            var folders = path.TrimEnd('/').Split('/');
+            if (folders.Length == 2)
+                return Task.FromResult<IStoreCollection>(this);
+
+            var rootfolder = folders[2];
+
+            var res = GetItemsAsync(null).Result;
+            if (res == null)
+                return Task.FromResult<IStoreCollection>(null);
+            var res1 = res.FirstOrDefault(x => x.Name == rootfolder);
+            if (res1 == null)
+                return Task.FromResult<IStoreCollection>(null);
+
+            if (folders.Length == 3)
+                return Task.FromResult<IStoreCollection>(res1 as IStoreCollection);
+
+            JboxSharedRootCollection rootCollection = (JboxSharedRootCollection)res1;
+            return rootCollection.GetCollectionFromPathAsync(path);
+        }
+
         public Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, IHttpContext httpContext)
         {
-            return Task.FromResult(new StoreItemResult(DavStatusCode.Conflict));
+            return Task.FromResult(new StoreItemResult(DavStatusCode.Forbidden));
         }
 
         public async Task<DavStatusCode> UploadFromStreamAsync(IHttpContext httpContext, string name, Stream inputStream, long length)
         {
-            return DavStatusCode.Conflict;
+            return DavStatusCode.Forbidden;
         }
 
         public Task<StoreCollectionResult> CreateCollectionAsync(string name, bool overwrite, IHttpContext httpContext)
@@ -228,6 +250,7 @@ namespace NWebDav.Server.Stores
             model.State = JboxSharedState.invalid;
             model.Name = name;
             model.Modified = DateTime.Now;
+            model.Token = "";
 
             JboxShared.items.Add(model);
             JboxShared.Save();
@@ -257,10 +280,11 @@ namespace NWebDav.Server.Stores
                     return new StoreItemResult(DavStatusCode.NotFound);
                 item.Name = destinationName;
                 item.State = JboxSharedState.invalid;
+                JboxShared.Save();
                 return new StoreItemResult(DavStatusCode.Ok, new JboxSharedRootCollection(LockingManager, item));
             }
             else
-                return new StoreItemResult(DavStatusCode.Conflict);
+                return new StoreItemResult(DavStatusCode.Forbidden);
         }
 
         public Task<DavStatusCode> DeleteItemAsync(string name, IHttpContext httpContext)

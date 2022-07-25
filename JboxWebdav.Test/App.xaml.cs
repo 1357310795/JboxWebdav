@@ -19,23 +19,26 @@ namespace JboxWebdav.Test
         {
             base.OnStartup(e);
 
+            var w = new MainWindow();
+            App.Current.MainWindow = w;
+            w.Show();
 
-            Jac.ReadInfo();
-            if (Jac.dic.Count > 0)
-            {
-                var ac = Jac.dic.Keys.First();
-                if (Jac.TryLastCookie(ac))
-                {
-                    var w = new MainWindow();
-                    App.Current.MainWindow = w;
-                    w.Show();
-                    return;
-                }
-            }
+            //Jac.ReadInfo();
+            //if (Jac.dic.Count > 0)
+            //{
+            //    var ac = Jac.dic.Keys.First();
+            //    if (Jac.TryLastCookie(ac))
+            //    {
+            //        var w = new MainWindow();
+            //        App.Current.MainWindow = w;
+            //        w.Show();
+            //        return;
+            //    }
+            //}
 
-            var w1 = new LoginWindow();
-            App.Current.MainWindow = w1;
-            w1.Show();
+            //var w1 = new LoginWindow();
+            //App.Current.MainWindow = w1;
+            //w1.Show();
         }
     }
 }

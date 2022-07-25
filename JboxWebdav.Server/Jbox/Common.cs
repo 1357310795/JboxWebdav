@@ -7,6 +7,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Jbox
@@ -57,6 +58,17 @@ namespace Jbox
 
             result = BitConverter.ToString(by).Replace("-", "").ToLower();
             return result;
+        }
+
+        public static string RSAEncrypt(string publicKey, string enptStr)
+        {
+            RSA rsa = RSA.Create();
+            rsa.ImportSubjectPublicKeyInfo(Convert.FromBase64String(publicKey), out _);
+            var xmlString = rsa.ToXmlString(false);
+            RSACryptoServiceProvider provider = new RSACryptoServiceProvider();
+            provider.FromXmlString(xmlString);
+            var result = provider.Encrypt(Encoding.Default.GetBytes(enptStr), false);
+            return Convert.ToBase64String(result);
         }
 
         public static Dictionary<string, string> ParseQueryString(string url)

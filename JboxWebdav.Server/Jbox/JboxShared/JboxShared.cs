@@ -8,7 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace JboxWebdav.Server.Jbox
+namespace JboxWebdav.Server.Jbox.JboxShared
 {
     public static class JboxShared
     {
@@ -84,7 +84,7 @@ namespace JboxWebdav.Server.Jbox
                 model.State = JboxSharedState.error;
                 return false;
             }
-            
+
             string fullurl = resp1.Headers["Location"];
             var regex5 = new Regex("^https://jbox.sjtu.edu.cn/v/link/view/([a-z0-9]{32})$");
             var match5 = regex5.Match(fullurl);
@@ -109,6 +109,7 @@ namespace JboxWebdav.Server.Jbox
         public JboxSharedState State { get; set; }
         public string Name { get; set; }
         public DateTime Modified { get; set; }
+        public string Token { get; set; }
     }
 
     public enum JboxSharedState

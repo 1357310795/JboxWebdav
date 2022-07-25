@@ -13,16 +13,28 @@ namespace NWebDav.Sample.HttpListener.LogAdapters
             public ConsoleLogger(Type type)
             {
                 _type = type;
+                Console.ResetColor();
             }
 
             public bool IsLogEnabled(LogLevel logLevel) => true;
 
             public void Log(LogLevel logLevel, Func<string> messageFunc, Exception exception)
             {
+                if (logLevel == LogLevel.Error || logLevel == LogLevel.Fatal)
+                {
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                }
+                else if (logLevel == LogLevel.Debug)
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                }
+                else
+                    Console.ForegroundColor = ConsoleColor.White;
                 if (exception == null)
                     Console.WriteLine($"{_type.Name} - {logLevel} - {messageFunc()}");
                 else
                     Console.WriteLine($"{_type.Name} - {logLevel} - {messageFunc()}: {exception.Message}");
+                Console.ResetColor();
             }
         }
 

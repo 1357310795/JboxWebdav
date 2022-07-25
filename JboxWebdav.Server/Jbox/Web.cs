@@ -196,6 +196,11 @@ namespace Jbox.Service
             return GetFinalResult(req);
         }
 
+        public static WebResult Get(string url, Dictionary<string, string> queryparas, Dictionary<string, string> headers)
+        {
+            return Get(BuildUrl(url, queryparas), headers);
+        }
+
         public static WebResult GetFinalResult(HttpWebRequest req)
         {
             HttpWebResponse resp = null;

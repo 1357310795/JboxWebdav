@@ -1,9 +1,11 @@
 ﻿using JboxWebdav.Server.Jbox;
+using NWebDav.Server;
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Locking;
 using NWebDav.Server.Logging;
 using NWebDav.Server.Props;
+using NWebDav.Server.Stores;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,7 +13,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace NWebDav.Server.Stores
+namespace JboxWebdav.Server.Jbox.JboxShared
 {
     public class JboxSharedCollection : IStoreCollection
     {
@@ -23,7 +25,7 @@ namespace NWebDav.Server.Stores
         {
             LockingManager = lockingManager;
             _shareddirectoryInfo = directoryInfo;
-            IsWritable = JboxAccess.CheckAccess(directoryInfo.AccessMode, JboxAccessMode.upload);
+            IsWritable = directoryInfo.AccessMode.CheckAccess(JboxAccessMode.upload);
         }
 
         public static PropertyManager<JboxSharedCollection> DefaultPropertyManager { get; } = new PropertyManager<JboxSharedCollection>(new DavProperty<JboxSharedCollection>[]
@@ -146,7 +148,7 @@ namespace NWebDav.Server.Stores
         // directories don't have their own data
         public Task<Stream> GetReadableStreamAsync(IHttpContext httpContext) => Task.FromResult((Stream)null);
 
-        public Task<Stream> GetReadableStreamAsync(IHttpContext httpContext,long start, long end) => Task.FromResult((Stream)null);
+        public Task<Stream> GetReadableStreamAsync(IHttpContext httpContext, long start, long end) => Task.FromResult((Stream)null);
 
         public IPropertyManager PropertyManager => DefaultPropertyManager;
         public ILockingManager LockingManager { get; }
@@ -166,7 +168,7 @@ namespace NWebDav.Server.Stores
 
                 // Add all files
                 foreach (var file in _shareddirectoryInfo.GetFiles())
-                    yield return new JboxSharedCollection(LockingManager, file);
+                    yield return new JboxSharedItem(LockingManager, file);
             }
 
             return Task.FromResult(GetItemsInternal());
@@ -174,18 +176,21 @@ namespace NWebDav.Server.Stores
 
         public Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, IHttpContext httpContext)
         {
-            return Task.FromResult(new StoreItemResult(DavStatusCode.Conflict));
+            return Task.FromResult(new StoreItemResult(DavStatusCode.Forbidden));
         }
 
         public async Task<DavStatusCode> UploadFromStreamAsync(IHttpContext httpContext, string name, Stream inputStream, long length)
         {
             if (!IsWritable)
-                return DavStatusCode.Conflict;
+                return DavStatusCode.Forbidden;
 
             try
             {
+                var path = UriHelper.Combine(_shareddirectoryInfo.Path, name);
+                var folders = path.Split('/').ToList();
+                folders.RemoveAt(1);
                 // Copy the information to the destination stream
-                var res = JboxService.UploadToSharedDir(UriHelper.Combine(_shareddirectoryInfo.Path, name), inputStream, length);
+                var res = JboxService.UploadToSharedDir(_shareddirectoryInfo.DeliveryCode, string.Join('/', folders), inputStream, length);
                 if (!res.success)
                     return DavStatusCode.Conflict;
                 return DavStatusCode.Ok;
@@ -198,7 +203,7 @@ namespace NWebDav.Server.Stores
 
         public Task<StoreCollectionResult> CreateCollectionAsync(string name, bool overwrite, IHttpContext httpContext)
         {
-            return Task.FromResult(new StoreCollectionResult(DavStatusCode.Conflict));
+            return Task.FromResult(new StoreCollectionResult(DavStatusCode.Forbidden));
         }
 
         public async Task<StoreItemResult> CopyAsync(IStoreCollection destinationCollection, string name, bool overwrite, IHttpContext httpContext)
@@ -221,7 +226,7 @@ namespace NWebDav.Server.Stores
 
         public Task<DavStatusCode> DeleteItemAsync(string name, IHttpContext httpContext)
         {
-            return Task.FromResult(DavStatusCode.Conflict);
+            return Task.FromResult(DavStatusCode.Forbidden);
         }
 
         public InfiniteDepthMode InfiniteDepthMode => InfiniteDepthMode.Assume1;

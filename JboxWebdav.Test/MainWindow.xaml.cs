@@ -1,4 +1,5 @@
-﻿using JboxWebdav.Server.Jbox;
+﻿using Jbox;
+using JboxWebdav.Server.Jbox;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -54,14 +55,26 @@ namespace JboxWebdav.Test
             }
         }
 
+        private string data;
+
+        public string Data
+        {
+            get { return data; }
+            set
+            {
+                data = value;
+                this.RaisePropertyChanged("Data");
+            }
+        }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            Task.Run(() => {
-                FileStream fs = new FileStream(FilePath, FileMode.Open, FileAccess.Read);
-                var res = JboxService.UploadFile(UploadPath, fs, fs.Length);
-                Debug.WriteLine(res.success);
-            });
+            Data = Common.RSAEncrypt("MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDHJclMklXtpTSr3OhNrwy99QnWtvbIrRyRc5+GSadMhDtCp7yDN7A8YY3ihiSyEkZ5sq0hDro69JOJrJU4oAE5ISVMSxKcPtT3iDXrmQxKuhftQGe16glVNEl2TVwFX+qPrMteeso37NzmulTHi1Od91LBRaGBcqmjGoErK+6N6wIDAQAB", Data);
+            //Task.Run(() => {
+            //    FileStream fs = new FileStream(FilePath, FileMode.Open, FileAccess.Read);
+            //    var res = JboxService.UploadFile(UploadPath, fs, fs.Length);
+            //    Debug.WriteLine(res.success);
+            //});
         }
 
         #region INotifyPropertyChanged members
