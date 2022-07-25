@@ -110,6 +110,7 @@ namespace JboxWebdav.Server.Jbox.JboxShared
         public string Name { get; set; }
         public DateTime Modified { get; set; }
         public string Token { get; set; }
+        public string AltName { get; set; }
     }
 
     public enum JboxSharedState

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Jbox
 {
@@ -45,6 +46,12 @@ namespace Jbox
             }
             return s;
 
+        }
+
+        public static string SanitizeFileName(string fileName)
+        {
+            Regex InvalidFileRegex = new Regex(string.Format("[{0}]", Regex.Escape(@"<>:""/\|?*")));
+            return InvalidFileRegex.Replace(fileName, "_");
         }
 
         public static string GetSHA256(Stream stream)

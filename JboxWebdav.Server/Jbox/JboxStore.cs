@@ -30,7 +30,7 @@ namespace NWebDav.Server.Stores
         public Task<IStoreItem> GetItemAsync(Uri uri, IHttpContext httpContext)
         {
             var res = GetItemAsyncInternal(uri).Result;
-            //s_log.Log(LogLevel.Debug, () => $"【{(res?.GetType())}】路径 {uri.ToString()}");
+            s_log.Log(LogLevel.Debug, () => $"【{(res?.GetType())}】路径 {uri.ToString()}");
             return Task.FromResult(res);
         }
 
@@ -71,7 +71,7 @@ namespace NWebDav.Server.Stores
         public Task<IStoreCollection> GetCollectionAsync(Uri uri, IHttpContext httpContext)
         {
             var res = GetCollectionInternal(uri).Result;
-            //s_log.Log(LogLevel.Debug, () => $"【{(res?.GetType())}】路径 {uri.ToString()}");
+            s_log.Log(LogLevel.Debug, () => $"【{(res?.GetType())}】路径 {uri.ToString()}");
             return Task.FromResult(res);
         }
 

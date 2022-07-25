@@ -22,7 +22,7 @@ namespace JboxWebdav.Server.Jbox.JboxShared
     {
         private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(JboxSharedRootCollection));
         private static readonly XElement s_xDavCollection = new XElement(WebDavNamespaces.DavNs + "collection");
-        private readonly JboxSharedModel _model;
+        public readonly JboxSharedModel _model;
 
         public JboxSharedRootCollection(ILockingManager lockingManager, JboxSharedModel model)
         {
@@ -208,6 +208,12 @@ namespace JboxWebdav.Server.Jbox.JboxShared
                                 yield return new JboxSharedCollection(LockingManager, item3);
                             else
                                 yield return new JboxSharedItem(LockingManager, item3);
+
+                            if ((_model.AltName ?? "") == "")
+                            {
+                                _model.AltName = _model.Name;
+                                _model.Name = Common.SanitizeFileName($"{item3.DeliveryCreator}的分享 - {item3.Path.Replace("/", "")} - {item3.DeliveryCode.Substring(0, 6)}");
+                            }
                         }
                         else if (item3.Code.Contains("invalid password/token"))
                         {
