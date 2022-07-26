@@ -205,7 +205,7 @@ namespace JboxWebdav.Server.Jbox.JboxShared
                         if (item3.success)
                         {
                             if (item3.IsDir)
-                                yield return new JboxSharedCollection(LockingManager, item3);
+                                yield return new JboxSharedCollection(LockingManager,_model, item3);
                             else
                                 yield return new JboxSharedItem(LockingManager, item3);
 
@@ -214,6 +214,8 @@ namespace JboxWebdav.Server.Jbox.JboxShared
                                 _model.AltName = _model.Name;
                                 _model.Name = Common.SanitizeFileName($"{item3.DeliveryCreator}的分享 - {item3.Path.Replace("/", "")} - {item3.DeliveryCode.Substring(0, 6)}");
                             }
+                            _model.CreatorUid = item3.DeliveryCreatorUid;
+                            JboxShared.Save();
                         }
                         else if (item3.Code.Contains("invalid password/token"))
                         {
@@ -247,6 +249,8 @@ namespace JboxWebdav.Server.Jbox.JboxShared
             folders.RemoveRange(1, 2);
 
             var top = folders[1];
+            if (_model.State == JboxSharedState.ok && top == "需要密码.txt")
+                return Task.FromResult<IStoreItem>(null);
             var res = GetItemsAsync(null).Result;
             if (res == null)
                 return Task.FromResult<IStoreItem>(null);
@@ -262,7 +266,7 @@ namespace JboxWebdav.Server.Jbox.JboxShared
                 var newpath = string.Join('/', folders);
                 var res2 = JboxService.GetJboxSharedItemInfo(_model.DeliveryCode, newpath, _model.Token);
                 if (res2.IsDir)
-                    return Task.FromResult<IStoreItem>(new JboxSharedCollection(LockingManager, res2));
+                    return Task.FromResult<IStoreItem>(new JboxSharedCollection(LockingManager, _model, res2));
                 else
                     return Task.FromResult<IStoreItem>(new JboxSharedItem(LockingManager, res2));
             }
@@ -293,7 +297,7 @@ namespace JboxWebdav.Server.Jbox.JboxShared
                 var newpath = string.Join('/', folders);
                 var res2 = JboxService.GetJboxSharedItemInfo(_model.DeliveryCode, newpath, _model.Token);
                 if (res2.IsDir)
-                    return Task.FromResult<IStoreCollection>(new JboxSharedCollection(LockingManager, res2));
+                    return Task.FromResult<IStoreCollection>(new JboxSharedCollection(LockingManager, _model, res2));
                 else
                     return Task.FromResult<IStoreCollection>(null);
             }
@@ -356,17 +360,31 @@ namespace JboxWebdav.Server.Jbox.JboxShared
 
         public async Task<StoreItemResult> MoveItemAsync(string sourceName, IStoreCollection destinationCollection, string destinationName, bool overwrite, IHttpContext httpContext)
         {
-            //Todo
-            return new StoreItemResult(DavStatusCode.PreconditionFailed);
-            //// Return error
-            //if (!IsWritable)
-            //    return new StoreItemResult(DavStatusCode.PreconditionFailed);
+            // Determine the object that is being moved
+            var sourceitem = await GetItemAsync(sourceName, httpContext).ConfigureAwait(false);
+            if (sourceitem == null)
+                return new StoreItemResult(DavStatusCode.NotFound);
+            JboxSharedItemInfo sourceiteminfo = null;
+            if (sourceitem is JboxSharedCollection collection)
+            {
+                sourceiteminfo = collection._shareddirectoryInfo;
+            }
+            else if (sourceitem is JboxSharedItem item)
+            {
+                sourceiteminfo = item._fileInfo;
+            }
+            else
+                return new StoreItemResult(DavStatusCode.BadRequest);
 
-            //// Determine the object that is being moved
-            //var item = await GetItemAsync(sourceName, httpContext).ConfigureAwait(false);
-            //if (item == null)
-            //    return new StoreItemResult(DavStatusCode.NotFound);
+            if (!(destinationCollection is JboxStoreCollection))
+                return new StoreItemResult(DavStatusCode.BadRequest);
 
+            var res = JboxService.JboxDeliveryTransfer(sourceiteminfo, (JboxStoreCollection)destinationCollection, _model.Token, _model.CreatorUid);
+
+            if (res.success)
+                return new StoreItemResult(DavStatusCode.Created);
+            else
+                return new StoreItemResult(DavStatusCode.BadRequest);
             //try
             //{
             //    if (destinationCollection is not JboxStoreCollection destinationJboxStoreCollection)

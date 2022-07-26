@@ -17,7 +17,7 @@ namespace NWebDav.Server.Stores
     {
         private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(JboxStoreCollection));
         private static readonly XElement s_xDavCollection = new XElement(WebDavNamespaces.DavNs + "collection");
-        private readonly JboxDirectoryInfo _directoryInfo;
+        public readonly JboxDirectoryInfo _directoryInfo;
 
         public JboxStoreCollection(ILockingManager lockingManager, JboxDirectoryInfo directoryInfo, bool isWritable)
         {

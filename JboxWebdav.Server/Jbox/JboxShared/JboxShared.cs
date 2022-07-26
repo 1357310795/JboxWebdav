@@ -111,6 +111,7 @@ namespace JboxWebdav.Server.Jbox.JboxShared
         public DateTime Modified { get; set; }
         public string Token { get; set; }
         public string AltName { get; set; }
+        public long CreatorUid { get; set; }
     }
 
     public enum JboxSharedState

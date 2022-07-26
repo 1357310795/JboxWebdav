@@ -19,12 +19,14 @@ namespace JboxWebdav.Server.Jbox.JboxShared
     {
         private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(JboxSharedCollection));
         private static readonly XElement s_xDavCollection = new XElement(WebDavNamespaces.DavNs + "collection");
-        private readonly JboxSharedItemInfo _shareddirectoryInfo;
+        public readonly JboxSharedItemInfo _shareddirectoryInfo;
+        public readonly JboxSharedModel _model;
 
-        public JboxSharedCollection(ILockingManager lockingManager, JboxSharedItemInfo directoryInfo)
+        public JboxSharedCollection(ILockingManager lockingManager, JboxSharedModel model,  JboxSharedItemInfo directoryInfo)
         {
             LockingManager = lockingManager;
             _shareddirectoryInfo = directoryInfo;
+            _model = model;
             IsWritable = directoryInfo.AccessMode.CheckAccess(JboxAccessMode.upload);
         }
 
@@ -155,7 +157,11 @@ namespace JboxWebdav.Server.Jbox.JboxShared
 
         public Task<IStoreItem> GetItemAsync(string name, IHttpContext httpContext)
         {
-            throw new NotImplementedException("Not Supported");
+            var res = GetItemsAsync(null).Result;
+            if (res == null)
+                return Task.FromResult<IStoreItem>(null);
+            var res1 = res.FirstOrDefault(x => x.Name == name);
+            return Task.FromResult<IStoreItem>(res1);
         }
 
         public Task<IEnumerable<IStoreItem>> GetItemsAsync(IHttpContext httpContext)
@@ -164,7 +170,7 @@ namespace JboxWebdav.Server.Jbox.JboxShared
             {
                 // Add all directories
                 foreach (var subDirectory in _shareddirectoryInfo.GetDirectories())
-                    yield return new JboxSharedCollection(LockingManager, subDirectory);
+                    yield return new JboxSharedCollection(LockingManager, _model, subDirectory);
 
                 // Add all files
                 foreach (var file in _shareddirectoryInfo.GetFiles())
@@ -220,8 +226,31 @@ namespace JboxWebdav.Server.Jbox.JboxShared
 
         public async Task<StoreItemResult> MoveItemAsync(string sourceName, IStoreCollection destinationCollection, string destinationName, bool overwrite, IHttpContext httpContext)
         {
-            //Todo
-            throw new NotImplementedException("Not Supported");
+            // Determine the object that is being moved
+            var sourceitem = await GetItemAsync(sourceName, httpContext).ConfigureAwait(false);
+            if (sourceitem == null)
+                return new StoreItemResult(DavStatusCode.NotFound);
+            JboxSharedItemInfo sourceiteminfo = null;
+            if (sourceitem is JboxSharedCollection collection)
+            {
+                sourceiteminfo = collection._shareddirectoryInfo;
+            }
+            else if (sourceitem is JboxSharedItem item)
+            {
+                sourceiteminfo = item._fileInfo;
+            }
+            else
+                return new StoreItemResult(DavStatusCode.BadRequest);
+
+            if (!(destinationCollection is JboxStoreCollection))
+                return new StoreItemResult(DavStatusCode.BadRequest);
+
+            var res = JboxService.JboxDeliveryTransfer(sourceiteminfo, (JboxStoreCollection)destinationCollection, _model.Token, _model.CreatorUid);
+
+            if (res.success)
+                return new StoreItemResult(DavStatusCode.Created);
+            else
+                return new StoreItemResult(DavStatusCode.BadRequest);
         }
 
         public Task<DavStatusCode> DeleteItemAsync(string name, IHttpContext httpContext)

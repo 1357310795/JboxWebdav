@@ -6,6 +6,7 @@ using JboxWebdav.Server.Jbox.Upload;
 using Newtonsoft.Json;
 using NutzCode.Libraries.Web;
 using NutzCode.Libraries.Web.StreamProvider;
+using NWebDav.Server.Stores;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +22,6 @@ namespace JboxWebdav.Server.Jbox
         
         public static CommonResult GetDeliveryAuthToken(string deliverycode, string passwordenc)
         {
-            //https://jbox.sjtu.edu.cn/v2/delivery/auth/bd8644a5da20485680b29e18e33df40a?account_id=1&uid=388333&S=94F5A20E&_=1658739208000
             var headers = GetCommonHeaders();
             var paras = GetCommonQueryParas();
             var forms = new Dictionary<string, string>();
@@ -305,6 +305,38 @@ namespace JboxWebdav.Server.Jbox
         public static JboxMoveItemInfo DeleteJboxItem(JboxItemInfo item)
         {
             return DeleteJboxItem(item.Path);
+        }
+
+        public static CommonResult JboxDeliveryTransfer(JboxSharedItemInfo source, JboxStoreCollection dest, string token, long deliveryCreatorUid)
+        {
+            string reqBodyValueTemplate = "{{\"from\":[{{\"root\":\"databox\",\"path\":\"{0}\",\"delivery_code\":\"{1}\",\"rev\":\"{2}\",\"neid\":\"{3}\",\"nsid\":{4},\"delivery_creator_uid\":{5}}}],\"to\":{{\"root\":\"databox\",\"path\":\"{6}\",\"path_type\":\"self\",\"from\":\"\",\"neid\":\"{7}\",\"prefix_neid\":\"\"}},\"other_data\":{{\"delivery_id\":\"{8}\"}}}}";
+
+            string reqBodyValue = String.Format(reqBodyValueTemplate, new string[] {
+                source.Path,
+                source.DeliveryCode,
+                source.Rev,
+                source.Neid,
+                source.Nsid.ToString(),
+                deliveryCreatorUid.ToString(),
+                dest.FullPath,
+                dest._directoryInfo.Neid,
+                source.DeliveryCode,
+            });
+
+            var headers = GetCommonHeaders();
+            var paras = GetCommonQueryParas();
+            var forms = new Dictionary<string, string>();
+            forms.Add("json", reqBodyValue);
+            forms.Add("token", token ?? "");
+
+            var res = Web.Post("https://jbox.sjtu.edu.cn/v2/delivery/delivery_transfor", paras, headers, forms, true);
+
+            if (res.result == null)
+                throw new Exception(res.message);
+
+            var json = JsonConvert.DeserializeObject<JboxDeliveryTransferDto>(res.result);
+
+            return new CommonResult(json.type != "error", "");
         }
 
         public static Dictionary<string, string> GetCommonHeaders()

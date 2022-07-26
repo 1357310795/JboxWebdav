@@ -103,6 +103,9 @@ namespace JboxWebdav.Server.Jbox
         [JsonProperty("preview_url")]
         public string PreviewUrl { get; set; }
 
+        [JsonProperty("rev")]
+        public string Rev { get; set; }
+
         [JsonProperty("result")]
         public string Result { get; set; }
 
@@ -975,5 +978,11 @@ namespace JboxWebdav.Server.Jbox
     public class JboxDeliveryAuthDto
     {
         public string token { get; set; }
+    }
+
+    public class JboxDeliveryTransferDto
+    {
+        public string result { get; set; }
+        public string type { get; set; }
     }
 }

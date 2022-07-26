@@ -17,7 +17,7 @@ namespace JboxWebdav.Server.Jbox.JboxShared
     public class JboxSharedItem : IStoreItem
     {
         private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(JboxSharedItem));
-        private readonly JboxSharedItemInfo _fileInfo;
+        public readonly JboxSharedItemInfo _fileInfo;
 
         public JboxSharedItem(ILockingManager lockingManager, JboxSharedItemInfo fileInfo)
         {
