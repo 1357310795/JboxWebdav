@@ -817,6 +817,8 @@ namespace JboxWebdav.Server.Jbox
             }
         }
 
+        public bool IsDetailed = true;
+
         internal JboxDirectoryInfo ToJboxDirectoryInfo()
         {
             return new JboxDirectoryInfo()
@@ -850,6 +852,65 @@ namespace JboxWebdav.Server.Jbox
                 MimeType = MimeType,
                 Hash = Hash
             };
+        }
+
+        internal string GetName()
+        {
+            if (IsDir)
+            {
+                var tmp = Path.Last() == '/' ? Path.Substring(0, Path.Length - 1) : Path;
+                return tmp.Substring(tmp.LastIndexOf("/") + 1);
+            }
+            else
+                return Path.Substring(Path.LastIndexOf("/") + 1);
+        }
+
+        internal Stream OpenRead()
+        {
+            return JboxService.GetFile(Path, Bytes);
+        }
+
+        internal Stream OpenRead(long start, long end)
+        {
+            return JboxService.GetFile(Path, Bytes, start, end);
+        }
+
+        internal IEnumerable<JboxItemInfo> GetDirectories()
+        {
+            if (!IsDetailed)
+                MergeResults(JboxService.GetJboxItemInfo(Path));
+            foreach (var item in Content)
+            {
+                if (item.IsDir)
+                {
+                    var tmp = item;
+                    tmp.IsDetailed = false;
+                    yield return tmp;
+                }
+            }
+        }
+
+        internal IEnumerable<JboxItemInfo> GetFiles()
+        {
+            if (!IsDetailed)
+                MergeResults(JboxService.GetJboxItemInfo(Path));
+            foreach (var item in Content)
+            {
+                if (!item.IsDir)
+                {
+                    var tmp = item;
+                    tmp.IsDetailed = false;
+                    yield return tmp;
+                }
+            }
+        }
+
+        private void MergeResults(JboxItemInfo info)
+        {
+            if (!info.success)
+                return;
+            this.Content = info.Content;
+            this.IsDetailed = true;
         }
     }
 

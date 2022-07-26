@@ -1,51 +1,43 @@
-﻿using JboxWebdav.Server.Jbox;
-using JboxWebdav.Server.Jbox.JboxShared;
-using NWebDav.Server.Helpers;
+﻿using NWebDav.Server;
 using NWebDav.Server.Http;
 using NWebDav.Server.Locking;
 using NWebDav.Server.Logging;
 using NWebDav.Server.Props;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+using NWebDav.Server.Stores;
 using System.Xml.Linq;
 
-namespace NWebDav.Server.Stores
+namespace JboxWebdav.Server.Jbox.JboxPublic
 {
-    public class JboxSpecialCollection_Shared : IStoreCollection
+    public class JboxSpecialCollection_Public : IStoreCollection
     {
-        private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(JboxSpecialCollection_Shared));
+        private static readonly ILogger s_log = LoggerFactory.CreateLogger(typeof(JboxSpecialCollection_Public));
         private static readonly XElement s_xDavCollection = new XElement(WebDavNamespaces.DavNs + "collection");
 
-        private static Dictionary<JboxSpecialCollectionType, JboxSpecialCollection_Shared> _instance = new Dictionary<JboxSpecialCollectionType, JboxSpecialCollection_Shared>();
+        private static JboxSpecialCollection_Public _instance;
         private static readonly object synchronized = new object();
 
-        public static JboxSpecialCollection_Shared getInstance(ILockingManager lockingManager, JboxSpecialCollectionType type)
+        public static JboxSpecialCollection_Public getInstance(ILockingManager lockingManager)
         {
-            if (!_instance.ContainsKey(type))
+            if (_instance == null)
             {
                 lock (synchronized)  //加锁防止多线程
                 {
-                    if (!_instance.ContainsKey(type))
+                    if (_instance == null)
                     {
-                        _instance.Add(type, new JboxSpecialCollection_Shared(lockingManager, type));
+                        _instance = new JboxSpecialCollection_Public(lockingManager);
                     }
                 }
             }
-            return _instance[type];
+            return _instance;
         }
 
-        private readonly JboxSpecialCollectionType _type;
-
-        public JboxSpecialCollection_Shared(ILockingManager lockingManager, JboxSpecialCollectionType type)
+        public JboxSpecialCollection_Public(ILockingManager lockingManager)
         {
             LockingManager = lockingManager;
-            _type = type;
+            IsWritable = false;
         }
 
-        public static PropertyManager<JboxSpecialCollection_Shared> DefaultPropertyManager { get; } = new PropertyManager<JboxSpecialCollection_Shared>(new DavProperty<JboxSpecialCollection_Shared>[]
+        public static PropertyManager<JboxSpecialCollection_Public> DefaultPropertyManager { get; } = new PropertyManager<JboxSpecialCollection_Public>(new DavProperty<JboxSpecialCollection_Public>[]
         {
             // RFC-2518 properties
             //new DavCreationDate<JboxStoreCollection>
@@ -57,11 +49,11 @@ namespace NWebDav.Server.Stores
             //        return DavStatusCode.Ok;
             //    }
             //},
-            new DavDisplayName<JboxSpecialCollection_Shared>
+            new DavDisplayName<JboxSpecialCollection_Public>
             {
-                Getter = (context, collection) => "他人的分享链接"
+                Getter = (context, collection) => "交大空间"
             },
-            new DavGetLastModified<JboxSpecialCollection_Shared>
+            new DavGetLastModified<JboxSpecialCollection_Public>
             {
                 Getter = (context, collection) => DateTime.Now,
                 Setter = (context, collection, value) =>
@@ -69,14 +61,14 @@ namespace NWebDav.Server.Stores
                     return DavStatusCode.Ok;
                 }
             },
-            new DavGetResourceType<JboxSpecialCollection_Shared>
+            new DavGetResourceType<JboxSpecialCollection_Public>
             {
                 Getter = (context, collection) => new []{s_xDavCollection}
             },
 
             // Default locking property handling via the LockingManager
             //new DavLockDiscoveryDefault<JboxStoreCollection>(),
-            new DavSupportedLockDefault<JboxSpecialCollection_Shared>(),
+            new DavSupportedLockDefault<JboxSpecialCollection_Public>(),
 
             // Hopmann/Lippert collection properties
             //new DavExtCollectionChildCount<JboxStoreCollection>
@@ -145,20 +137,21 @@ namespace NWebDav.Server.Stores
             //        return DavStatusCode.Ok;
             //    }
             //},
-            //new Win32FileAttributes<JboxSpecialCollection>
+            //new Win32FileAttributes<JboxStoreCollection>
             //{
-            //    Getter = (context, collection) => FileAttributes.ReadOnly,
+            //    Getter = (context, collection) => collection._directoryInfo.Attributes,
             //    Setter = (context, collection, value) =>
             //    {
+            //        collection._directoryInfo.Attributes = value;
             //        return DavStatusCode.Ok;
             //    }
             //}
         });
 
         public bool IsWritable { get; }
-        public string Name => "他人的分享链接";
-        public string UniqueKey => "他人的分享链接";
-        public string FullPath => "/他人的分享链接";
+        public string Name => "交大空间";
+        public string UniqueKey => "交大空间";
+        public string FullPath => "/交大空间";
 
         // Jbox collections (a.k.a. directories don't have their own data)
         public Task<Stream> GetReadableStreamAsync(IHttpContext httpContext) => Task.FromResult((Stream)null);
@@ -170,51 +163,51 @@ namespace NWebDav.Server.Stores
 
         public Task<IStoreItem> GetItemAsync(string name, IHttpContext httpContext)
         {
-            var res = GetItemsAsync(null).Result;
-            if (res == null)
-                return Task.FromResult<IStoreItem>(null);
-            var res1 = res.FirstOrDefault(x=>x.Name == name);
-            return Task.FromResult<IStoreItem>(res1);
-        }
+            // Determine the full path
+            var fullPath = $"/{name}";
 
-        public Task<IEnumerable<IStoreItem>> GetItemsAsync(IHttpContext httpContext)
-        {
-            IEnumerable<IStoreItem> GetItemsInternal()
+            var res = JboxService.GetJboxPublicItemInfo(fullPath);
+
+            if (!res.success)
             {
-                // Add all directories
-                foreach (var subDirectory in JboxShared.Get())
-                    yield return new JboxSharedRootCollection(LockingManager, subDirectory);
+                // The item doesn't exist
+                return Task.FromResult<IStoreItem>(null);
             }
 
-            return Task.FromResult(GetItemsInternal());
+            if (res.IsDir)
+            {
+                // Check if it's a directory
+                return Task.FromResult<IStoreItem>(new JboxPublicCollection(LockingManager, res));
+            }
+            else
+            {
+                // Check if it's a file
+                return Task.FromResult<IStoreItem>(new JboxPublicItem(LockingManager, res));
+            }
         }
 
         public Task<IStoreItem> GetItemFromPathAsync(string path)
         {
-            var folders = path.TrimEnd('/').Split('/');
-            if (folders.Length == 2)
+            var folders = path.TrimEnd('/').Split('/').ToList();
+            if (folders.Count == 2)
                 return Task.FromResult<IStoreItem>(this);
+            folders.RemoveAt(1);
+            var newpath = string.Join('/', folders);
+            var res = JboxService.GetJboxPublicItemInfo(newpath);
 
-            var rootfolder = folders[2];
-
-            var res = GetItemsAsync(null).Result;
-            if (res == null)
+            if (!res.success)
+            {
                 return Task.FromResult<IStoreItem>(null);
-            var res1 = res.FirstOrDefault(x => {
-                if (x.Name == rootfolder)
-                    return true;
-                if (x is JboxSharedRootCollection rootCollection)
-                    return rootCollection._model.AltName.Equals(rootfolder);
-                return false;
-            });
-            if (res1 == null)
-                return Task.FromResult<IStoreItem>(null);
+            }
 
-            if (folders.Length == 3)
-                return Task.FromResult<IStoreItem>(res1);
-
-            JboxSharedRootCollection rootCollection = (JboxSharedRootCollection)res1;
-            return rootCollection.GetItemFromPathAsync(path);
+            if (res.IsDir)
+            {
+                return Task.FromResult<IStoreItem>(new JboxPublicCollection(LockingManager, res));
+            }
+            else
+            {
+                return Task.FromResult<IStoreItem>(new JboxPublicItem(LockingManager, res));
+            }
         }
 
         public Task<IStoreCollection> GetCollectionFromPathAsync(string path)
@@ -223,9 +216,27 @@ namespace NWebDav.Server.Stores
             return Task.FromResult<IStoreCollection>(res as IStoreCollection);
         }
 
+        public Task<IEnumerable<IStoreItem>> GetItemsAsync(IHttpContext httpContext)
+        {
+            IEnumerable<IStoreItem> GetItemsInternal()
+            {
+                var _itemInfo = JboxService.GetJboxPublicItemInfo("/");
+                // Add all directories
+                foreach (var subDirectory in _itemInfo.GetDirectories())
+                    yield return new JboxPublicCollection(LockingManager, subDirectory);
+
+                // Add all files
+                foreach (var file in _itemInfo.GetFiles())
+                    yield return new JboxPublicItem(LockingManager, file);
+
+            }
+
+            return Task.FromResult(GetItemsInternal());
+        }
+
         public Task<StoreItemResult> CreateItemAsync(string name, bool overwrite, IHttpContext httpContext)
         {
-            return Task.FromResult(new StoreItemResult(DavStatusCode.Forbidden));
+            throw new NotImplementedException("Not Supported");
         }
 
         public async Task<DavStatusCode> UploadFromStreamAsync(IHttpContext httpContext, string name, Stream inputStream, long length)
@@ -235,18 +246,7 @@ namespace NWebDav.Server.Stores
 
         public Task<StoreCollectionResult> CreateCollectionAsync(string name, bool overwrite, IHttpContext httpContext)
         {
-            JboxSharedModel model = new JboxSharedModel();
-            model.DeliveryCode = "";
-            model.State = JboxSharedState.invalid;
-            model.Name = name;
-            model.Modified = DateTime.Now;
-            model.Token = "";
-            model.AltName = "";
-
-            JboxShared.Get().Add(model);
-            JboxShared.Save();
-
-            return Task.FromResult(new StoreCollectionResult(DavStatusCode.Created, new JboxSharedRootCollection(LockingManager, model)));
+            return Task.FromResult(new StoreCollectionResult(DavStatusCode.PreconditionFailed));
         }
 
         public async Task<StoreItemResult> CopyAsync(IStoreCollection destinationCollection, string name, bool overwrite, IHttpContext httpContext)
@@ -254,6 +254,7 @@ namespace NWebDav.Server.Stores
             // Just create the folder itself
             var result = await destinationCollection.CreateCollectionAsync(name, overwrite, httpContext).ConfigureAwait(false);
             return new StoreItemResult(result.Result, result.Collection);
+            throw new NotImplementedException("Not Supported");
         }
 
         public bool SupportsFastMove(IStoreCollection destination, string destinationName, bool overwrite, IHttpContext httpContext)
@@ -263,42 +264,12 @@ namespace NWebDav.Server.Stores
 
         public async Task<StoreItemResult> MoveItemAsync(string sourceName, IStoreCollection destinationCollection, string destinationName, bool overwrite, IHttpContext httpContext)
         {
-            if (destinationCollection is JboxSpecialCollection_Shared specialCollection && specialCollection.Name == this.Name)
-            {
-                var list = JboxShared.Get();
-                var item = list.FirstOrDefault(x => x.Name == sourceName);
-                if (item == null)
-                    return new StoreItemResult(DavStatusCode.NotFound);
-                if (item.State == JboxSharedState.ok)
-                {
-                    item.AltName = item.Name;
-                    item.Name = destinationName;
-                }
-                else
-                {
-                    item.Name = destinationName;
-                    item.State = JboxSharedState.invalid;
-                }
-                
-                JboxShared.Save();
-                return new StoreItemResult(DavStatusCode.Ok, new JboxSharedRootCollection(LockingManager, item));
-            }
-            else
-                return new StoreItemResult(DavStatusCode.Forbidden);
+            return new StoreItemResult(DavStatusCode.PreconditionFailed);
         }
 
         public Task<DavStatusCode> DeleteItemAsync(string name, IHttpContext httpContext)
         {
-            var list = JboxShared.Get();
-            var item = list.FirstOrDefault(x => x.Name == name);
-            if (item == null)
-                return Task.FromResult(DavStatusCode.NotFound);
-            else
-            {
-                JboxShared.items.Remove(item);
-                JboxShared.Save();
-                return Task.FromResult(DavStatusCode.Ok);
-            }
+            return Task.FromResult(DavStatusCode.PreconditionFailed);
         }
 
         public InfiniteDepthMode InfiniteDepthMode => InfiniteDepthMode.Assume1;
@@ -310,10 +281,10 @@ namespace NWebDav.Server.Stores
 
         public override bool Equals(object obj)
         {
-            var storeCollection = obj as JboxSpecialCollection_Shared;
+            var storeCollection = obj as JboxSpecialCollection_Public;
             if (storeCollection == null)
                 return false;
-            return storeCollection.FullPath.Equals(FullPath, StringComparison.CurrentCultureIgnoreCase);
+            return true;
         }
     }
 }

@@ -80,6 +80,16 @@ namespace NWebDav.Server.Handlers
                 return true;
             }
 
+            if (topfolder == "交大空间")
+            {
+                var sourceCollection = await store.GetCollectionAsync(splitSourceUri.CollectionUri, httpContext).ConfigureAwait(false);
+                var destinationCollection = await store.GetCollectionAsync(splitDestinationUri.CollectionUri, httpContext).ConfigureAwait(false);
+                var result = await sourceCollection.MoveItemAsync(splitSourceUri.Name, destinationCollection, splitDestinationUri.Name, true, httpContext).ConfigureAwait(false);
+
+                response.SetStatus(result.Result);
+                return true;
+            }
+
             JboxMoveItemInfo res = null;
             if (sourceCollectionUri == destinationCollectionUri)
             {

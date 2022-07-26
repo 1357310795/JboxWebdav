@@ -1,4 +1,5 @@
 ﻿using JboxWebdav.Server.Jbox;
+using JboxWebdav.Server.Jbox.JboxPublic;
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Locking;
@@ -189,7 +190,10 @@ namespace NWebDav.Server.Stores
                     yield return new JboxStoreItem(LockingManager, file, IsWritable);
 
                 if (Config.SharedEnabled && FullPath == "/")
-                    yield return JboxSpecialCollection.getInstance(LockingManager, JboxSpecialCollectionType.Shared);
+                    yield return JboxSpecialCollection_Shared.getInstance(LockingManager, JboxSpecialCollectionType.Shared);
+
+                if (Config.PublicEnabled && FullPath == "/")
+                    yield return JboxSpecialCollection_Public.getInstance(LockingManager);
             }
 
             return Task.FromResult(GetItemsInternal());

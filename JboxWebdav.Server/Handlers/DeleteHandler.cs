@@ -58,6 +58,12 @@ namespace NWebDav.Server.Handlers
                 return true;
             }
 
+            if (topfolder == "交大空间")
+            {
+                response.SetStatus(DavStatusCode.Forbidden);
+                return true;
+            }
+
             // Delete item
             JboxMoveItemInfo res = null;
             res = JboxService.DeleteJboxItem(deleteItemUri);

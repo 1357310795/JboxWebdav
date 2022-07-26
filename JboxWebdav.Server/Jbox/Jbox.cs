@@ -45,6 +45,7 @@ namespace JboxWebdav.Server.Jbox
             var paras = GetCommonQueryParas();
             var forms = GetCommonBodyForms();
 
+            forms.Add("path_type", "self");
             forms.Add("page_num", "0");
             forms.Add("target_path", path);
 
@@ -103,6 +104,41 @@ namespace JboxWebdav.Server.Jbox
                 }
             }
             json.Token = token;
+            return json;
+        }
+
+        public static JboxItemInfo GetJboxPublicItemInfo(string path)
+        {
+            var headers = GetCommonHeaders();
+            var paras = GetCommonQueryParas();
+            var forms = GetCommonBodyForms();
+
+            forms.Add("path_type", "ent");
+            forms.Add("page_num", "0");
+            forms.Add("target_path", path);
+
+            var res = Web.Post("https://jbox.sjtu.edu.cn/v2/metadata_page/databox",
+                paras, headers, forms, true);
+
+            if (!res.success)
+                throw new Exception(res.result);
+
+            var json = JsonConvert.DeserializeObject<JboxItemInfo>(res.result);
+
+            if (json.success && json.IsDir)
+            {
+                for (int i = 1; i <= (json.ContentSize - 1) / 50; i++)
+                {
+                    forms["page_num"] = i.ToString();
+                    headers = GetCommonHeaders();
+                    var res1 = Web.Post("https://jbox.sjtu.edu.cn/v2/metadata_page/databox", paras, headers, forms, true);
+                    if (!res1.success)
+                        throw new Exception(res1.result);
+                    var json1 = JsonConvert.DeserializeObject<JboxItemInfo>(res1.result);
+
+                    MergePageResults(json, json1);
+                }
+            }
             return json;
         }
 
@@ -216,6 +252,15 @@ namespace JboxWebdav.Server.Jbox
             ParameterResolverProvider_Shared parameterResolverProvider = new ParameterResolverProvider_Shared(item.DownloadUrl, item.Bytes, item.Token);
 
             SeekableWebStream stream = new SeekableWebStream(item.DownloadUrl, start ?? 0, end ?? item.Bytes, webDataProvider, parameterResolverProvider.ParameterResolver);
+
+            return stream;
+        }
+
+        public static Stream GetPublicFile(string path, long length, long? start = null, long? end = null)
+        {
+            ParameterResolverProvider_Public parameterResolverProvider = new ParameterResolverProvider_Public(path, length);
+
+            SeekableWebStream stream = new SeekableWebStream(path, start ?? 0, end ?? length, webDataProvider, parameterResolverProvider.ParameterResolver);
 
             return stream;
         }
@@ -367,7 +412,6 @@ namespace JboxWebdav.Server.Jbox
         {
             //path_type=self&sort=asc&orderby=name&page_button_count=5&page_size=100&page_num=0&include_deleted=false&neid=1494956305029279781&nsid=388579&target_path=%2F%F0%9F%98%85&prefix_neid=
             Dictionary<string, string> d = new Dictionary<string, string>();
-            d.Add("path_type", "self");
             d.Add("sort", "asc");
             d.Add("orderby", "name");
             d.Add("page_button_count", "9999999");

@@ -1,5 +1,6 @@
 ﻿using Jbox.Service;
 using JboxWebdav.Server.Jbox;
+using JboxWebdav.Server.Jbox.JboxPublic;
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Locking;
@@ -42,11 +43,16 @@ namespace NWebDav.Server.Stores
 
             if (topfolder == "他人的分享链接")
             {
-                var specialfolder = JboxSpecialCollection.getInstance(LockingManager, JboxSpecialCollectionType.Shared);
+                var specialfolder = JboxSpecialCollection_Shared.getInstance(LockingManager, JboxSpecialCollectionType.Shared);
                 return specialfolder.GetItemFromPathAsync(path);
                 //return Task.FromResult<IStoreItem>();
             }
-
+            if (topfolder == "交大空间")
+            {
+                var specialfolder = JboxSpecialCollection_Public.getInstance(LockingManager);
+                return specialfolder.GetItemFromPathAsync(path);
+                //return Task.FromResult<IStoreItem>();
+            }
 
             var res = JboxService.GetJboxItemInfo(path);
 
@@ -83,7 +89,14 @@ namespace NWebDav.Server.Stores
 
             if (topfolder == "他人的分享链接")
             {
-                var specialfolder = JboxSpecialCollection.getInstance(LockingManager, JboxSpecialCollectionType.Shared);
+                var specialfolder = JboxSpecialCollection_Shared.getInstance(LockingManager, JboxSpecialCollectionType.Shared);
+                return specialfolder.GetCollectionFromPathAsync(path);
+                //return Task.FromResult<IStoreItem>();
+            }
+
+            if (topfolder == "交大空间")
+            {
+                var specialfolder = JboxSpecialCollection_Public.getInstance(LockingManager);
                 return specialfolder.GetCollectionFromPathAsync(path);
                 //return Task.FromResult<IStoreItem>();
             }
