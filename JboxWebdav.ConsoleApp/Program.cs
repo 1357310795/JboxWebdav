@@ -67,28 +67,9 @@ namespace NWebDav.Sample.HttpListener
         private static void Main(string[] args)
         {
             Console.WriteLine("Welcome to JboxWebdav!");
-            var res = TryLogin();
-            if (!res)
-            {
-                Console.WriteLine("Cookie登录失败，请使用账号密码登录");
-                while(true)
-                {
-                    Console.Write("Jaccount账号：");
-                    var account = Console.ReadLine();
-                    Console.Write("Jaccount密码：");
-                    var password = ReadPassword();
-                    var res1 = Jac.Login(account, password);
-                    if (res1.state == Jac.LoginState.success)
-                    {
-                        Console.WriteLine("登录成功！");
-                        break;
-                    }
-                    else
-                    {
-                        Console.WriteLine(res1.message);
-                    }
-                }
-            }
+            Login();
+
+
             LoggerFactory.Factory = new ConsoleAdapter();
 
             var webdavProtocol = "http";
@@ -105,15 +86,17 @@ namespace NWebDav.Sample.HttpListener
                 var cancellationTokenSource = new CancellationTokenSource();
                 DispatchHttpRequestsAsync(httpListener, cancellationTokenSource.Token);
 
-                Console.WriteLine("WebDAV 服务器运行中。按下 x 可以退出，按下 c 进入设置。");
+                Console.WriteLine("WebDAV 服务器运行中。按下 x 退出，按下 c 进入设置。");
                 while (Console.ReadKey().KeyChar != 'x') ;
                 Console.ReadKey();
                 cancellationTokenSource.Cancel();
             }
         }
 
-        private static bool TryLogin()
+        private static void Login()
         {
+            Console.WriteLine("尝试登录...");
+            var loginres = Jac.LoginState.success;
             Jac.InitStorage(new WinStorage());
             Jac.ReadInfo();
             if (Jac.dic.Count > 0)
@@ -121,10 +104,55 @@ namespace NWebDav.Sample.HttpListener
                 var ac = Jac.dic.Keys.First();
                 if (Jac.TryLastCookie(ac))
                 {
-                    return true;
+                    Console.WriteLine("Cookie登录成功。");
+                    loginres = Jac.LoginState.success;
+                    return;
                 }
             }
-            return false;
+            if (Jac.CheckVPN())
+                loginres = Jac.LoginState.fail;
+            else
+                loginres = Jac.LoginState.novpn;
+
+            if (loginres == Jac.LoginState.novpn)
+            {
+                while(true)
+                {
+                    Console.WriteLine("请先拨通交大VPN，然后按任意键继续！");
+                    Console.ReadKey(true);
+                    if (Jac.CheckVPN())
+                        break;
+                }
+                if (Jac.dic.Count > 0)
+                {
+                    var ac = Jac.dic.Keys.First();
+                    if (Jac.TryLastCookie(ac))
+                    {
+                        Console.WriteLine("Cookie登录成功。");
+                        loginres = Jac.LoginState.success;
+                        return;
+                    }
+                }
+            }
+
+            Console.WriteLine("Cookie登录失败，请使用账号密码重新登录。");
+            while (true)
+            {
+                Console.Write("Jaccount账号：");
+                var account = Console.ReadLine();
+                Console.Write("Jaccount密码：");
+                var password = ReadPassword();
+                var res1 = Jac.Login(account, password);
+                if (res1.state == Jac.LoginState.success)
+                {
+                    Console.WriteLine("登录成功！");
+                    break;
+                }
+                else
+                {
+                    Console.WriteLine(res1.message);
+                }
+            }
         }
 
         private static string ReadPassword()

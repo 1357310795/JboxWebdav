@@ -207,6 +207,7 @@ namespace JboxWebdav.Server.Jbox.JboxPublic
 
         public async Task<StoreItemResult> MoveItemAsync(string sourceName, IStoreCollection destinationCollection, string destinationName, bool overwrite, IHttpContext httpContext)
         {
+            //Todo
             return new StoreItemResult(DavStatusCode.PreconditionFailed);
         }
 
