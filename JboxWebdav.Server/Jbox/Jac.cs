@@ -17,6 +17,7 @@ namespace Jbox.Service
         public static string account, password;
         public static IStorage storage;
         public static string publicKey;
+        public static string configpath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "JboxWebdav");
 
         public static Dictionary<string, JboxCookie> dic = new Dictionary<string, JboxCookie>();
 
@@ -404,30 +405,57 @@ namespace Jbox.Service
             return islogin;
         }
 
+        //public static void ReadInfo()
+        //{
+        //    var cookies = storage.GetKeyValue("cookies", "list", "");
+        //    var list = cookies.Split(',');
+        //    foreach(var item in list)
+        //    {
+        //        if (item.Trim() == "")
+        //            continue;
+        //        var account = item.Trim();
+        //        var cookie = storage.GetKeyValue("cookies", account, "");
+        //        var json = JsonConvert.DeserializeObject<JboxCookie>(cookie);
+        //        dic.Add(account, json);
+        //    }
+        //}
+
+        //public static void SaveInfo()
+        //{
+        //    foreach (var item in dic)
+        //    {
+        //        var cookiestr = JsonConvert.SerializeObject(item.Value);
+        //        storage.SetKeyValue("cookies", item.Key, cookiestr);
+        //    }
+        //    var list = string.Join(",", dic.Keys);
+        //    storage.SetKeyValue("cookies", "list", list);
+        //}
         public static void ReadInfo()
         {
-            var cookies = storage.GetKeyValue("cookies", "list", "");
-            var list = cookies.Split(',');
-            foreach(var item in list)
+            if (!File.Exists(Path.Combine(configpath,"cookie.json")))
+                return;
+            StreamReader sr = new StreamReader(Path.Combine(configpath, "cookie.json"));
+            while (!sr.EndOfStream)
             {
-                if (item.Trim() == "")
-                    continue;
-                var account = item.Trim();
-                var cookie = storage.GetKeyValue("cookies", account, "");
-                var json = JsonConvert.DeserializeObject<JboxCookie>(cookie);
-                dic.Add(account, json);
+                var key = sr.ReadLine();
+                var jsonstr = File.ReadAllText(Path.Combine(configpath, key + ".json"));
+                var json = JsonConvert.DeserializeObject<JboxCookie>(jsonstr);
+                dic.Add(key, json);
             }
+            sr.Close();
         }
 
         public static void SaveInfo()
         {
+            Directory.CreateDirectory(configpath);
+            StreamWriter sw = new StreamWriter(Path.Combine(configpath, "cookie.json"));
             foreach (var item in dic)
             {
                 var cookiestr = JsonConvert.SerializeObject(item.Value);
-                storage.SetKeyValue("cookies", item.Key, cookiestr);
+                File.WriteAllText(Path.Combine(configpath, item.Key + ".json"), cookiestr);
+                sw.WriteLine(item.Key);
             }
-            var list = string.Join(",", dic.Keys);
-            storage.SetKeyValue("cookies", "list", list);
+            sw.Close();
         }
 
         public static bool ValidateLogin()

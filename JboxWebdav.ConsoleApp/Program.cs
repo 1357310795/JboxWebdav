@@ -5,10 +5,8 @@ using NWebDav.Server.HttpListener;
 using NWebDav.Server.Logging;
 using NWebDav.Server.Stores;
 using NWebDav.Sample.HttpListener.LogAdapters;
-using System.Diagnostics;
 using Jbox.Service;
 using NWebDav.Server.Helpers;
-using JboxWebdav.ConsoleApp.Services;
 using System.Text;
 
 namespace NWebDav.Sample.HttpListener
@@ -97,7 +95,7 @@ namespace NWebDav.Sample.HttpListener
         {
             Console.WriteLine("尝试登录...");
             var loginres = Jac.LoginState.success;
-            Jac.InitStorage(new WinStorage());
+            //Jac.InitStorage(new WinStorage());
             Jac.ReadInfo();
             if (Jac.dic.Count > 0)
             {
