@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-
+using JboxWebdav.Server.Jbox;
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Stores;
@@ -35,6 +35,12 @@ namespace NWebDav.Server.Handlers
             // Obtain request and response
             var request = httpContext.Request;
             var response = httpContext.Response;
+
+            if (!Config.AccessMode.CheckAccess(JboxAccessMode.create))
+            {
+                response.SetStatus(DavStatusCode.Forbidden);
+                return true;
+            }
 
             // The collection must always be created inside another collection
             var splitUri = RequestHelper.SplitUri(request.Url);

@@ -14,5 +14,8 @@ namespace JboxWebdav.Server.Jbox
         public static bool PublicEnabled { get; set; } = true;
 
         public static string AppDataDir { get; set; } = Environment.GetEnvironmentVariable("LocalAppData") + "\\JboxWebdav\\";
+
+        public static int AccessMode { get; set; } = 1023;
+
     }
 }

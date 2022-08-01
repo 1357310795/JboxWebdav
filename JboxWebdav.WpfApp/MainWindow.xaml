@@ -48,6 +48,21 @@
                        Foreground="Red"
                        Text="{Binding WebdavMessage}"
                        FontSize="14" FontFamily="Microsoft YaHei UI Light" />
+            <Expander Header="功能设置" materialDesign:ExpanderAssist.HorizontalHeaderPadding="10,5">
+                <StackPanel Orientation="Vertical" Margin="10,5">
+                    <CheckBox Content="启用“交大空间”" IsChecked="{Binding JboxPublicEnabled}"/>
+                    <CheckBox Content="启用“他人的分享链接”" IsChecked="{Binding JboxSharedEnabled}" Margin="0,5,0,0"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                        <TextBlock Text="权限设定：" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <ComboBox MinWidth="150" ItemsSource="{Binding AccessModes}" SelectedItem="{Binding AccessMode}" DisplayMemberPath="Display"></ComboBox>
+                    </StackPanel>
+                </StackPanel>
+            </Expander>
+            <Expander Header="程序设置" materialDesign:ExpanderAssist.HorizontalHeaderPadding="10,5">
+                <StackPanel Orientation="Vertical" Margin="10,5">
+                    <CheckBox Content="开机自启（暂时不可用）" IsEnabled="False"/>
+                </StackPanel>
+            </Expander>
         </StackPanel>
     </Grid>
 </Window>

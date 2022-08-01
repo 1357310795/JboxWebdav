@@ -19,12 +19,13 @@ namespace JboxWebdav.Server.Jbox
         create = 32
     }
     //39:create:download:upload:preview
+    //1023
 
     public static class JboxAccess
     {
         public static bool CheckAccess(this int access, JboxAccessMode mode)
         {
-            return (access | (int)mode) > 0;
+            return (access & (int)mode) > 0;
         }
     }
 }

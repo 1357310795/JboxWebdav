@@ -1,4 +1,6 @@
 ﻿using Hardcodet.Wpf.TaskbarNotification;
+using JboxWebdav.Server.Jbox;
+using JboxWebdav.WpfApp.Extensions;
 using JboxWebdav.WpfApp.Helpers;
 using JboxWebdav.WpfApp.Models;
 using JboxWebdav.WpfApp.Services;
@@ -24,6 +26,11 @@ namespace JboxWebdav.WpfApp
         public MainWindow()
         {
             InitializeComponent();
+            AccessModes = new List<AccessModeDto>();
+            AccessModes.Add(new AccessModeDto("完全模式", AccessModeEnum.Full, 1023));
+            AccessModes.Add(new AccessModeDto("只读模式", AccessModeEnum.ReadOnly, 5));
+            AccessModes.Add(new AccessModeDto("读写模式", AccessModeEnum.ReadWrite, 39));
+            AccessModes.Add(new AccessModeDto("防止删除模式", AccessModeEnum.NoDelete, 1023 - 64));
             this.DataContext = this;
         }
         #endregion
@@ -91,16 +98,68 @@ namespace JboxWebdav.WpfApp
         }
         #endregion
 
-        #region Settings
+        #region IpAddress
         private void ReadSettings()
         {
             IpAddress = IniHelper.GetKeyValue("WpfApp", "IpAddress", "http://127.0.0.1:65472/", IniHelper.inipath);
+            JboxPublicEnabled = bool.Parse(IniHelper.GetKeyValue("WpfApp", "JboxPublicEnabled", "true", IniHelper.inipath));
+            JboxSharedEnabled = bool.Parse(IniHelper.GetKeyValue("WpfApp", "JboxSharedEnabled", "true", IniHelper.inipath));
+            var accesstype = IniHelper.GetKeyValue("WpfApp", "AccessMode", "Full", IniHelper.inipath).ToEnum<AccessModeEnum>();
+            AccessMode = AccessModes.FirstOrDefault(x => x.Type == accesstype);
         }
 
         private void SaveSettings()
         {
             IniHelper.SetKeyValue("WpfApp", "IpAddress", IpAddress, IniHelper.inipath);
         }
+        #endregion
+
+        #region Settings Fields
+
+        public bool? JboxPublicEnabled
+        {
+            get { return Config.PublicEnabled; }
+            set
+            {
+                Config.PublicEnabled = value.Value;
+                this.RaisePropertyChanged("JboxPublicEnabled");
+            }
+        }
+
+        public bool? JboxSharedEnabled
+        {
+            get { return Config.SharedEnabled; }
+            set
+            {
+                Config.SharedEnabled = value.Value;
+                this.RaisePropertyChanged("JboxSharedEnabled");
+            }
+        }
+
+        private List<AccessModeDto> accessModes;
+
+        public List<AccessModeDto> AccessModes
+        {
+            get { return accessModes; }
+            set
+            {
+                accessModes = value;
+                this.RaisePropertyChanged("AccessModes");
+            }
+        }
+        private AccessModeDto accessMode;
+
+        public AccessModeDto AccessMode
+        {
+            get { return accessMode; }
+            set
+            {
+                accessMode = value;
+                Config.AccessMode = value.AccessCode;
+                this.RaisePropertyChanged("AccessMode");
+            }
+        }
+
         #endregion
 
         #region Webdav Service

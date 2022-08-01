@@ -38,8 +38,11 @@ namespace NWebDav.Server.Handlers
             var request = httpContext.Request;
             var response = httpContext.Response;
 
-            // Keep track of all errors
-            var errors = new UriResultCollection();
+            if (!Config.AccessMode.CheckAccess(JboxAccessMode.delete))
+            {
+                response.SetStatus(DavStatusCode.Forbidden);
+                return true;
+            }
 
             // We should always remove the item from a parent container
             var splitUri = RequestHelper.SplitUri(request.Url);

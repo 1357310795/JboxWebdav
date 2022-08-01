@@ -37,7 +37,13 @@ namespace NWebDav.Server.Handlers
             // Obtain request and response
             var request = httpContext.Request;
             var response = httpContext.Response;
-            
+
+            if (!Config.AccessMode.CheckAccess(JboxAccessMode.move))
+            {
+                response.SetStatus(DavStatusCode.Forbidden);
+                return true;
+            }
+
             // We should always move the item from a parent container
             var splitSourceUri = RequestHelper.SplitUri(request.Url);
 
