@@ -185,6 +185,7 @@ namespace JboxWebdav.Server.Jbox.JboxShared
                 // Add all directories
                 foreach (var subDirectory in JboxShared.Get())
                     yield return new JboxSharedRootCollection(LockingManager, subDirectory);
+                yield return new JboxSharedTrashbinCollection(LockingManager);
             }
 
             return Task.FromResult(GetItemsInternal());
@@ -207,6 +208,8 @@ namespace JboxWebdav.Server.Jbox.JboxShared
                     return true;
                 if (x is JboxSharedRootCollection rootCollection)
                     return rootCollection._model.AltName.Equals(rootfolder);
+                if (x is JboxSharedTrashbinCollection trashbin)
+                    return x.Name == rootfolder;
                 return false;
             });
             if (res1 == null)
@@ -214,6 +217,9 @@ namespace JboxWebdav.Server.Jbox.JboxShared
 
             if (folders.Length == 3)
                 return Task.FromResult(res1);
+
+            if (res1 is JboxSharedTrashbinCollection)
+                return Task.FromResult<IStoreItem>(null);
 
             JboxSharedRootCollection rootCollection = (JboxSharedRootCollection)res1;
             return rootCollection.GetItemFromPathAsync(path);
@@ -271,6 +277,11 @@ namespace JboxWebdav.Server.Jbox.JboxShared
                 var item = list.FirstOrDefault(x => x.Name == sourceName);
                 if (item == null)
                     return new StoreItemResult(DavStatusCode.NotFound);
+                if (destinationName.ToLower() == "deleted")
+                {
+                    list.Remove(item);
+                }
+                else
                 if (item.State == JboxSharedState.ok)
                 {
                     item.AltName = item.Name;
@@ -284,6 +295,16 @@ namespace JboxWebdav.Server.Jbox.JboxShared
 
                 JboxShared.Save();
                 return new StoreItemResult(DavStatusCode.Ok, new JboxSharedRootCollection(LockingManager, item));
+            }
+            else if (destinationCollection is JboxSharedTrashbinCollection)
+            {
+                var list = JboxShared.Get();
+                var item = list.FirstOrDefault(x => x.Name == sourceName);
+                if (item == null)
+                    return new StoreItemResult(DavStatusCode.NotFound);
+                list.Remove(item);
+                JboxShared.Save();
+                return new StoreItemResult(DavStatusCode.Ok);
             }
             else
                 return new StoreItemResult(DavStatusCode.Forbidden);
