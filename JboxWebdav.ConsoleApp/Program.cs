@@ -8,12 +8,15 @@ using NWebDav.Sample.HttpListener.LogAdapters;
 using Jbox.Service;
 using NWebDav.Server.Helpers;
 using System.Text;
+using JboxWebdav.Server.Jbox;
 
 namespace NWebDav.Sample.HttpListener
 {
     internal class Program
     {
+        private static ILogger s_log = LoggerFactory.CreateLogger(typeof(Program));
         public static WebDavDispatcher webDavDispatcher;
+        public static string Address;
 
         private static async void DispatchHttpRequestsAsync(System.Net.HttpListener httpListener, CancellationToken cancellationToken)
         {
@@ -57,7 +60,8 @@ namespace NWebDav.Sample.HttpListener
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                s_log.Log(LogLevel.Error, () => ex.Message);
+                //Console.WriteLine(ex.Message);
                 //throw new ArgumentException(ex.Message);
             }
         }
@@ -67,27 +71,51 @@ namespace NWebDav.Sample.HttpListener
             Console.WriteLine("Welcome to JboxWebdav!");
             Login();
 
-
             LoggerFactory.Factory = new ConsoleAdapter();
+            Address = "http://127.0.0.1:65472/";
 
-            var webdavProtocol = "http";
-            var webdavIp = "127.0.0.1";
-            var webdavPort = "65472";
-
-            using (var httpListener = new System.Net.HttpListener())
+            while(true)
             {
-                httpListener.Prefixes.Add($"{webdavProtocol}://{webdavIp}:{webdavPort}/");
+                using (var httpListener = new System.Net.HttpListener())
+                {
 
-                httpListener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
-                httpListener.Start();
+                    var cancellationTokenSource = new CancellationTokenSource();
+                    try
+                    {
+                        httpListener.Prefixes.Add(Address);
+                        httpListener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
+                        httpListener.Start();
 
-                var cancellationTokenSource = new CancellationTokenSource();
-                DispatchHttpRequestsAsync(httpListener, cancellationTokenSource.Token);
+                        DispatchHttpRequestsAsync(httpListener, cancellationTokenSource.Token);
 
-                Console.WriteLine("WebDAV 服务器运行中。按下 x 退出，按下 c 进入设置。");
-                while (Console.ReadKey().KeyChar != 'x') ;
-                Console.ReadKey();
-                cancellationTokenSource.Cancel();
+                        Console.WriteLine("WebDAV 服务器运行中。按下 x 退出，按下 c 进入设置。");
+                        Console.WriteLine($"监听地址：{Address}");
+                    }
+                    catch(Exception ex)
+                    {
+                        s_log.Log(LogLevel.Fatal, () => ex.Message);
+                        Console.WriteLine("出现严重错误，请更改正确的监听地址、确保程序有相关权限，然后重启程序！");
+                    }
+                    
+
+                    while (true)
+                    {
+                        var key = Console.ReadKey();
+                        if (key.KeyChar == 'x')
+                        {
+                            cancellationTokenSource.Cancel();
+                            return;
+                        }
+                        if (key.KeyChar == 'c')
+                        {
+                            if (ChangeConfig())
+                            {
+                                cancellationTokenSource.Cancel();
+                                break;
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -155,30 +183,6 @@ namespace NWebDav.Sample.HttpListener
 
         private static string ReadPassword()
         {
-            //string res = "";
-            //while (true)
-            //{
-            //    ConsoleKeyInfo ck = Console.ReadKey(true);
-
-            //    if (ck.Key != ConsoleKey.Enter)
-            //    {
-            //        if (ck.Key != ConsoleKey.Backspace)
-            //        {
-            //            res += ck.KeyChar.ToString();
-            //            Console.Write("*");
-            //        }
-            //        else
-            //        {
-            //            Console.Write("\b \b");
-            //        }
-            //    }
-            //    else
-            //    {
-            //        Console.WriteLine();
-            //        break;
-            //    }
-            //}
-            //return res;
             char cPassword;     //登陆时要用的密码 
             StringBuilder cPass = new StringBuilder();//关键方法 
             cPassword = Console.ReadKey(true).KeyChar;//输入字符可以让他不显示出来
@@ -210,6 +214,50 @@ namespace NWebDav.Sample.HttpListener
             }
             Console.WriteLine();
             return cPass.ToString();
+        }
+
+        private static bool ChangeConfig()
+        {
+            var changed = false;
+            while(true)
+            {
+                Console.WriteLine();
+                Console.WriteLine("---设置---");
+                Console.WriteLine($"1.更改监听地址（当前：{Address}）");
+                Console.WriteLine($"2.停用/启用“交大空间”（当前：{(Config.PublicEnabled ? "已启用" : "未启用")}）");
+                Console.WriteLine($"3.停用/启用“他人的分享链接”（当前：{(Config.SharedEnabled ? "已启用" : "未启用")}）");
+                Console.Write("请输入数字1~3更改设置，留空退出 > ");
+                var line = Console.ReadLine();
+                switch(line)
+                {
+                    case "":
+                        Console.WriteLine("退出设置。");
+                        //changed = true;
+                        return changed;
+                        break;
+                    case "1":
+                        Console.Write("请输入新地址，留空不变 > ");
+                        var newaddr = Console.ReadLine();
+                        if (newaddr == "")
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            Address = newaddr;
+                            changed = true;
+                        }
+                        break;
+                    case "2":
+                        Config.PublicEnabled = !Config.PublicEnabled;
+                        //changed = true;
+                        break;
+                    case "3":
+                        Config.SharedEnabled = !Config.SharedEnabled;
+                        //changed = true;
+                        break;
+                }
+            }
         }
     }
 }
