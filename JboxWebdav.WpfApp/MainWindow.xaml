@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:JboxWebdav.WpfApp"
         xmlns:converters="clr-namespace:JboxWebdav.WpfApp.Converters"
         Title="JboxWebdav - v0.1" Closed="Window_Closed"
-        Width="400" Height="300" StateChanged="Window_StateChanged"
+        Width="400" Height="400" StateChanged="Window_StateChanged"
         Icon="/Resources/jbox-webdav.ico" Loaded="Window_Loaded"
         WindowStartupLocation="CenterScreen"
         mc:Ignorable="d">

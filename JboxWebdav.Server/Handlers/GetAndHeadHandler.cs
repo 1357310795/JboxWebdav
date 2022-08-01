@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using JboxWebdav.Server.Jbox;
 using NWebDav.Server.Helpers;
@@ -58,6 +59,16 @@ namespace NWebDav.Server.Handlers
                 return true;
             }
 
+            if (entry is JboxStoreCollection collection && collection.FullPath == "/" && !head)
+            {
+                var htmlstr = "<div style=\"width: 400px; height: 200px; margin: auto auto; \">JboxWebdav Server Running!</div>";
+                var htmlstream = new MemoryStream(Encoding.UTF8.GetBytes(htmlstr));
+                response.SetHeaderValue("Content-Length", $"{htmlstream.Length}");
+                await CopyToAsync(htmlstream, response.Stream, range?.Start ?? 0, range?.End).ConfigureAwait(false);
+                response.SetStatus(DavStatusCode.Ok);
+                return true;
+            }
+
             // ETag might be used for a conditional request
             string etag = null;
 
@@ -86,8 +97,7 @@ namespace NWebDav.Server.Handlers
                     response.SetHeaderValue("Content-Language", contentLanguage);
             }
 
-            var fulllength = long.Parse((string)(await propertyManager.GetPropertyAsync(httpContext, entry, DavGetContentLength<IStoreItem>.PropertyName, true).ConfigureAwait(false)));
-
+         
             // Set the response
             response.SetStatus(DavStatusCode.Ok);
 
@@ -105,6 +115,7 @@ namespace NWebDav.Server.Handlers
                 response.SetHeaderValue("Accept-Ranges", "bytes");
 
                 // Determine the total length
+                var fulllength = long.Parse((string)(await propertyManager.GetPropertyAsync(httpContext, entry, DavGetContentLength<IStoreItem>.PropertyName, true).ConfigureAwait(false)));
                 var length = fulllength;
 
                 // Check if an 'If-Range' was specified

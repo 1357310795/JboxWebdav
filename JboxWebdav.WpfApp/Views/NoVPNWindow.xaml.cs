@@ -1,31 +1,33 @@
 ﻿using Jbox.Service;
-using JboxWebdav.WpfApp.Helpers;
-using JboxWebdav.WpfApp.Services;
-using JboxWebdav.WpfApp.Views;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 
-namespace JboxWebdav.WpfApp
+namespace JboxWebdav.WpfApp.Views
 {
     /// <summary>
-    /// Interaction logic for App.xaml
+    /// NoVPNWindow.xaml 的交互逻辑
     /// </summary>
-    public partial class App : Application
+    public partial class NoVPNWindow : Window
     {
-        protected override void OnStartup(StartupEventArgs e)
+        public NoVPNWindow()
         {
-            base.OnStartup(e);
-            log4net.Config.XmlConfigurator.Configure();
-            ThemeHelper.ChangeHue("#c8161e");
+            InitializeComponent();
+        }
 
-            Jac.InitStorage(new WinStorage());
-            Jac.ReadInfo();
-            if (Jac.dic.Count>0)
+        private void Button_Clicked(object sender, RoutedEventArgs e)
+        {
+            if (Jac.dic.Count > 0)
             {
                 var ac = Jac.dic.Keys.First();
                 if (Jac.TryLastCookie(ac))
@@ -33,6 +35,7 @@ namespace JboxWebdav.WpfApp
                     var w = new MainWindow();
                     App.Current.MainWindow = w;
                     w.Show();
+                    this.Close();
                     return;
                 }
             }
@@ -41,14 +44,11 @@ namespace JboxWebdav.WpfApp
                 var w = new LoginWindow();
                 App.Current.MainWindow = w;
                 w.Show();
-                return;
+                this.Close();
             }
             else
             {
-                var w = new NoVPNWindow();
-                App.Current.MainWindow = w;
-                w.Show();
-                return;
+                MainSnackbar.MessageQueue.Enqueue("请重试", null, null, null, false, true, TimeSpan.FromSeconds(3));
             }
         }
     }
