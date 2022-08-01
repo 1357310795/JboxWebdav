@@ -1,10 +1,11 @@
 ﻿using JboxWebdav.Server.Jbox;
-using JboxWebdav.Server.Jbox.JboxShared;
+using NWebDav.Server;
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Locking;
 using NWebDav.Server.Logging;
 using NWebDav.Server.Props;
+using NWebDav.Server.Stores;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,7 +13,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace NWebDav.Server.Stores
+namespace JboxWebdav.Server.Jbox.JboxShared
 {
     public class JboxSpecialCollection_Shared : IStoreCollection
     {
@@ -163,7 +164,7 @@ namespace NWebDav.Server.Stores
         // Jbox collections (a.k.a. directories don't have their own data)
         public Task<Stream> GetReadableStreamAsync(IHttpContext httpContext) => Task.FromResult((Stream)null);
 
-        public Task<Stream> GetReadableStreamAsync(IHttpContext httpContext,long start, long end) => Task.FromResult((Stream)null);
+        public Task<Stream> GetReadableStreamAsync(IHttpContext httpContext, long start, long end) => Task.FromResult((Stream)null);
 
         public IPropertyManager PropertyManager => DefaultPropertyManager;
         public ILockingManager LockingManager { get; }
@@ -173,7 +174,7 @@ namespace NWebDav.Server.Stores
             var res = GetItemsAsync(null).Result;
             if (res == null)
                 return Task.FromResult<IStoreItem>(null);
-            var res1 = res.FirstOrDefault(x=>x.Name == name);
+            var res1 = res.FirstOrDefault(x => x.Name == name);
             return Task.FromResult<IStoreItem>(res1);
         }
 
@@ -200,7 +201,8 @@ namespace NWebDav.Server.Stores
             var res = GetItemsAsync(null).Result;
             if (res == null)
                 return Task.FromResult<IStoreItem>(null);
-            var res1 = res.FirstOrDefault(x => {
+            var res1 = res.FirstOrDefault(x =>
+            {
                 if (x.Name == rootfolder)
                     return true;
                 if (x is JboxSharedRootCollection rootCollection)
@@ -211,7 +213,7 @@ namespace NWebDav.Server.Stores
                 return Task.FromResult<IStoreItem>(null);
 
             if (folders.Length == 3)
-                return Task.FromResult<IStoreItem>(res1);
+                return Task.FromResult(res1);
 
             JboxSharedRootCollection rootCollection = (JboxSharedRootCollection)res1;
             return rootCollection.GetItemFromPathAsync(path);
@@ -263,7 +265,7 @@ namespace NWebDav.Server.Stores
 
         public async Task<StoreItemResult> MoveItemAsync(string sourceName, IStoreCollection destinationCollection, string destinationName, bool overwrite, IHttpContext httpContext)
         {
-            if (destinationCollection is JboxSpecialCollection_Shared specialCollection && specialCollection.Name == this.Name)
+            if (destinationCollection is JboxSpecialCollection_Shared specialCollection && specialCollection.Name == Name)
             {
                 var list = JboxShared.Get();
                 var item = list.FirstOrDefault(x => x.Name == sourceName);
@@ -279,7 +281,7 @@ namespace NWebDav.Server.Stores
                     item.Name = destinationName;
                     item.State = JboxSharedState.invalid;
                 }
-                
+
                 JboxShared.Save();
                 return new StoreItemResult(DavStatusCode.Ok, new JboxSharedRootCollection(LockingManager, item));
             }

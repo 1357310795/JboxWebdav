@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using Jbox;
+using Jbox.Service;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
@@ -36,6 +38,7 @@ namespace JboxWebdav.Server.Jbox.JboxShared
 
         public static bool CheckIsValid(JboxSharedModel model)
         {
+            //Full URL
             var regex1 = new Regex("^(https?)?jbox.sjtu.edu.cnvlinkview([a-z0-9]{32})$");
             var regex2 = new Regex("^([a-z0-9]{32})$");
             var match1 = regex1.Match(model.Name);
@@ -52,27 +55,39 @@ namespace JboxWebdav.Server.Jbox.JboxShared
                 model.State = JboxSharedState.ok;
                 return true;
             }
+            //Short URL With Password
             string shorturl = "";
-            var regex3 = new Regex("^(https?)?jbox.sjtu.edu.cnl([a-z0-9A-Z]{6})$");
-            var match3 = regex3.Match(model.Name);
-            if (match3.Success)
+            var regex233 = new Regex("^(https?)?jbox.sjtu.edu.cnl([a-z0-9A-Z]{6}).+?提取码：([a-z0-9A-Z]{4})");
+            var match233 = regex233.Match(model.Name);
+            if (match233.Success)
             {
-                shorturl = match3.Groups[2].Value;
+                shorturl = match233.Groups[2].Value;
             }
+            //Short URL
             else
             {
-                var regex4 = new Regex("^([a-z0-9A-Z]{6})$");
-                var match4 = regex4.Match(model.Name);
-                if (match4.Success)
+                var regex3 = new Regex("^(https?)?jbox.sjtu.edu.cnl([a-z0-9A-Z]{6})$");
+                var match3 = regex3.Match(model.Name);
+                if (match3.Success)
                 {
-                    shorturl = match4.Groups[1].Value;
+                    shorturl = match3.Groups[2].Value;
+                }
+                else
+                {
+                    var regex4 = new Regex("^([a-z0-9A-Z]{6})$");
+                    var match4 = regex4.Match(model.Name);
+                    if (match4.Success)
+                    {
+                        shorturl = match4.Groups[1].Value;
+                    }
+                }
+                if (shorturl == "")
+                {
+                    model.State = JboxSharedState.invalid;
+                    return false;
                 }
             }
-            if (shorturl == "")
-            {
-                model.State = JboxSharedState.invalid;
-                return false;
-            }
+            
             shorturl = $"https://jbox.sjtu.edu.cn/l/{shorturl}";
             HttpWebRequest req1 = (HttpWebRequest)WebRequest.Create(shorturl);
             req1.AllowAutoRedirect = false;
@@ -92,6 +107,24 @@ namespace JboxWebdav.Server.Jbox.JboxShared
             {
                 model.DeliveryCode = match5.Groups[1].Value;
                 model.State = JboxSharedState.ok;
+                if (match233.Success)
+                {
+                    var password = match233.Groups[3].Value;
+                    var password_enc = Common.RSAEncrypt(Jac.publicKey, password);
+                    var tokenres = JboxService.GetDeliveryAuthToken(model.DeliveryCode, password_enc);
+                    if (tokenres.success)
+                    {
+                        model.Token = tokenres.result;
+                        model.State = JboxSharedState.ok;
+                        JboxShared.Save();
+                        return true;
+                    }
+                    else
+                    {
+                        model.State = JboxSharedState.needpassword;
+                        return false;
+                    }
+                }
                 return true;
             }
             else

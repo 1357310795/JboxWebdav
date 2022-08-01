@@ -1,5 +1,6 @@
 ﻿using JboxWebdav.Server.Jbox;
 using JboxWebdav.Server.Jbox.JboxPublic;
+using JboxWebdav.Server.Jbox.JboxShared;
 using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.Locking;
