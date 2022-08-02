@@ -57,7 +57,7 @@ namespace JboxWebdav.Server.Jbox.JboxShared
             }
             //Short URL With Password
             string shorturl = "";
-            var regex233 = new Regex("^(https?)?jbox.sjtu.edu.cnl([a-z0-9A-Z]{6}).+?提取码：([a-z0-9A-Z]{4})");
+            var regex233 = new Regex("^(https?)?jbox.sjtu.edu.cnl([a-z0-9A-Z]{6}).+?提取码：([a-z0-9A-Z]{1,6})");
             var match233 = regex233.Match(model.Name);
             if (match233.Success)
             {

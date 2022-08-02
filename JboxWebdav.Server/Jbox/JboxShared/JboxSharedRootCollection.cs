@@ -318,7 +318,7 @@ namespace JboxWebdav.Server.Jbox.JboxShared
             {
                 var sr = new StreamReader(inputStream);
                 var content = sr.ReadToEnd();
-                var regex = new Regex("请输入密码：([0-9a-zA-Z]{4})");
+                var regex = new Regex("请输入密码：([0-9a-zA-Z]{1,6})");
                 var match = regex.Match(content);
                 if (match.Success)
                 {
