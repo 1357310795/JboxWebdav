@@ -207,7 +207,7 @@ namespace JboxWebdav.Server.Jbox.Upload
             form.Add("is_file_commit", "true");
             form.Add("language", "zh");
             form.Add("overwrite", "true");
-            form.Add("path", path);
+            form.Add("path", path.UrlEncodeByParts());
             form.Add("path_type", "self");
             form.Add("utime", Common.GetTimeStampMilli());
             var formstr = Web.BuildForm(form, false);
