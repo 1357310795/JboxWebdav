@@ -264,7 +264,13 @@ namespace JboxWebdav.Server.Jbox.JboxShared
             {
                 folders.RemoveAt(1);
                 var newpath = string.Join('/', folders);
-                var res2 = JboxService.GetJboxSharedItemInfo(_model.DeliveryCode, newpath, _model.Token);
+                var res2 = JboxService.GetJboxSharedItemInfo(_model.DeliveryCode, newpath, _model.Token); 
+
+                if (!res2.success)
+                {
+                    return Task.FromResult<IStoreItem>(null);
+                }
+
                 if (res2.IsDir)
                     return Task.FromResult<IStoreItem>(new JboxSharedCollection(LockingManager, _model, res2));
                 else
