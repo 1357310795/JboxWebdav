@@ -168,7 +168,7 @@ namespace NWebDav.Server.Props
     {
         private class Rfc1123DateConverter : IConverter
         {
-            public object ToXml(IHttpContext httpContext, DateTime value) => value.ToString("R");
+            public object ToXml(IHttpContext httpContext, DateTime value) => value.ToUniversalTime().ToString("R");
             public DateTime FromXml(IHttpContext httpContext, object value) => DateTime.Parse((string)value, CultureInfo.InvariantCulture);
         }
 
