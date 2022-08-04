@@ -26,11 +26,11 @@ JboxWebdav 提供多种应用程序框架，以达到跨平台支持。以下是
 
 ![](https://s2.loli.net/2022/08/01/7bi1gGhDj2EIwXm.png)
 
-5. 登录Jaccount（安全性问题见[这里](../about/readme.md#安全性说明)）
+5. 登录 Jaccount（安全性问题见[这里](../about/readme.md#安全性说明)）
 
 ![](https://s2.loli.net/2022/07/03/YXpRmdWC1QHSMrz.png)
 
-6. 直接点击“运行”按钮运行Webdav服务。
+6. 直接点击“启动”按钮运行 Webdav 服务。
 
 ![](https://s2.loli.net/2022/08/01/YujkUPdKIiXfbAT.png)
 
