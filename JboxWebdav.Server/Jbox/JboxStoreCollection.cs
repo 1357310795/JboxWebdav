@@ -1,4 +1,5 @@
-﻿using JboxWebdav.Server.Jbox;
+﻿using Jbox.Service;
+using JboxWebdav.Server.Jbox;
 using JboxWebdav.Server.Jbox.JboxPublic;
 using JboxWebdav.Server.Jbox.JboxShared;
 using NWebDav.Server.Helpers;
@@ -138,6 +139,22 @@ namespace NWebDav.Server.Stores
             //        return DavStatusCode.Ok;
             //    }
             //}
+            new DavQuotaAvailableBytes<JboxStoreCollection>
+            {
+                Getter = (context, collection) => Jac.userInfo.Quota - Jac.userInfo.Used,
+                Setter = (context, collection, value) =>
+                {
+                    return DavStatusCode.Conflict;
+                }
+            },
+            new DavQuotaUsedBytes<JboxStoreCollection>
+            {
+                Getter = (context, collection) => Jac.userInfo.Used,
+                Setter = (context, collection, value) =>
+                {
+                    return DavStatusCode.Conflict;
+                }
+            }
         });
 
         public bool IsWritable { get; }
