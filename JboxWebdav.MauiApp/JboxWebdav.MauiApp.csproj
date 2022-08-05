@@ -38,7 +38,7 @@
 		<HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="$(TargetFramework.Contains('-windows')) and '$(Configuration)' == 'Release'">
+	<!--<PropertyGroup Condition="$(TargetFramework.Contains('-windows')) and '$(Configuration)' == 'Release'">
 		<GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
 		<AppxPackageSigningEnabled>true</AppxPackageSigningEnabled>
 		<PackageCertificateThumbprint>C36BE15A62B973CC72BD755AEB7E4DF4E9DB512E</PackageCertificateThumbprint>
@@ -50,7 +50,7 @@
 		<AndroidSigningKeyAlias>key</AndroidSigningKeyAlias>
 		<AndroidSigningKeyPass></AndroidSigningKeyPass>
 		<AndroidSigningStorePass></AndroidSigningStorePass>
-	</PropertyGroup>
+	</PropertyGroup>-->
 
 	<PropertyGroup  Condition="'$(TargetFramework)' == 'net6.0-maccatalyst' and '$(Configuration)' == 'Release'">
 		<!-- for Mac Catalyst -->
