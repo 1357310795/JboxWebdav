@@ -1,4 +1,5 @@
-﻿using JboxWebdav.MauiApp.Pages;
+﻿using CommunityToolkit.Maui;
+using JboxWebdav.MauiApp.Pages;
 
 namespace JboxWebdav.MauiApp
 {
@@ -13,7 +14,8 @@ namespace JboxWebdav.MauiApp
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-                });
+                })
+                .UseMauiCommunityToolkit();
             //builder.Services.AddSingleton<IConnectivity>(Connectivity.Current);
             //builder.Services.AddSingleton<IGeolocation>(Geolocation.Default);
             //builder.Services.AddSingleton<IMap>(Map.Default);
