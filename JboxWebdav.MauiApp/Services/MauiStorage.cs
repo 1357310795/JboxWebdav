@@ -21,8 +21,9 @@ namespace JboxWebdav.MauiApp.Services
 
         public string GetKeyValue(string Section, string Key, string DefaultText)
         {
-            string res = SecureStorage.Default.GetAsync($"{Section}_{Key}").Result;
-            return res ?? DefaultText;
+            var task = Task.Run(async () => { return await SecureStorage.Default.GetAsync($"{Section}_{Key}"); });
+            task.Wait();
+            return task.Result ?? DefaultText;
         }
 
         public bool SetKeyValue(string Section, string Key, string Value)

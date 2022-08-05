@@ -13,7 +13,7 @@ namespace JboxWebdav.MauiApp.Services
             {
                 _type = type;
                 if (LogStorage.logs == null)
-                    LogStorage.logs = new List<string>();
+                    LogStorage.logs = new List<string>(128);
             }
 
             public bool IsLogEnabled(LogLevel logLevel) => true;
