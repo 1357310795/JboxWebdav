@@ -5,6 +5,7 @@
 
 # JboxWebdav
 /JboxWebdav.WpfApp/Data
+/JboxWebdav.MauiApp/myapp.keystore
 
 # User-specific files
 *.rsuser
