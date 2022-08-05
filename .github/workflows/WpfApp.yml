@@ -1,0 +1,22 @@
+name: Build WPF App
+on:
+  workflow_dispatch:
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Build
+      run: dotnet build JboxWebdav.WpfApp/JboxWebdav.WpfApp.csproj -c Release -f net6.0-windows
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v3.1.0
+      with:
+        name: wpfapp-build
+        path: JboxWebdav.WpfApp/bin/Release/*.*

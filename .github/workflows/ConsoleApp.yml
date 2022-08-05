@@ -1,4 +1,4 @@
-name: Build ConsoleApp
+name: Build Console App
 on:
   workflow_dispatch:
 jobs:
