@@ -1,5 +1,6 @@
 name: Build .NET MAUI App For Android
-
+on:
+  workflow_dispatch:
 jobs:
   build:
 

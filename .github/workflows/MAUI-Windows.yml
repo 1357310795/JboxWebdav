@@ -1,5 +1,6 @@
 name: Build .NET MAUI App For Windows
-
+on:
+  workflow_dispatch:
 jobs:
   build:
 
