@@ -1,0 +1,29 @@
+name: Build .NET MAUI App For Android
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup Keystore File
+      run: |
+        echo "${{ secrets.KEYSTORE_FILE }}" > myapp.keystore.asc
+        gpg -d --passphrase "${{ secrets.KEYSTORE_PASSWORD_GPG }}" --batch myapp.keystore.asc > myapp.keystore
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: 6.0.x
+    - name: Install .NET MAUI
+      run: dotnet workload install maui
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build MauiGithubActionsSample/MauiGithubActionsSample.csproj -c Release -f net6.0-android /p:AndroidSigningKeyStore=myapp.keystore /p:AndroidSigningKeyAlias=ghactionskey /p:AndroidSigningKeyPass="${{ secrets.KEYSTORE_PASSWORD }}" /p:AndroidSigningStorePass="${{ secrets.KEYSTORE_PASSWORD_ALIAS }}" --no-restore
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v3.1.0
+      with:
+        path: |
+          ./**/*.aab
+          ./**/*.apk
