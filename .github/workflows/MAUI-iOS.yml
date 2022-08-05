@@ -1,4 +1,4 @@
-name: Build iOS
+name: Build .NET MAUI App For iOS
 
 on:
   workflow_dispatch:
