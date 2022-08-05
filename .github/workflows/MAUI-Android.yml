@@ -10,8 +10,8 @@ jobs:
     - uses: actions/checkout@v3
     - name: Setup Keystore File
       run: |
-        echo "${{ secrets.KEYSTORE_FILE }}" > myapp.keystore.asc
-        gpg -d --passphrase "${{ secrets.KEYSTORE_PASSWORD_GPG }}" --batch myapp.keystore.asc > myapp.keystore
+        echo "${{ secrets.Android_Keyfile }}" > myapp.keystore.asc
+        gpg -d --passphrase "123456" --batch myapp.keystore.asc > myapp.keystore
     - name: Setup .NET
       uses: actions/setup-dotnet@v2
       with:
@@ -21,7 +21,7 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build MauiGithubActionsSample/MauiGithubActionsSample.csproj -c Release -f net6.0-android /p:AndroidSigningKeyStore=myapp.keystore /p:AndroidSigningKeyAlias=ghactionskey /p:AndroidSigningKeyPass="${{ secrets.KEYSTORE_PASSWORD }}" /p:AndroidSigningStorePass="${{ secrets.KEYSTORE_PASSWORD_ALIAS }}" --no-restore
+      run: dotnet build JboxWebdav.MauiApp/JboxWebdav.MauiApp.csproj -c Release -f net6.0-android /p:AndroidSigningKeyStore=myapp.keystore /p:AndroidSigningKeyAlias=key /p:AndroidSigningKeyPass="123456" /p:AndroidSigningStorePass="123456" --no-restore
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v3.1.0
       with:
