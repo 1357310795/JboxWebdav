@@ -1,0 +1,37 @@
+name: Build .NET MAUI App For MacCatalyst
+
+on:
+  workflow_dispatch:
+
+env:
+    DOTNETVERSION: 6.0.x
+    BUILDTYPE: Release
+
+jobs:
+  build-mac:
+    runs-on: macos-latest
+    name: MacCatalyst Build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup .NET ${{env.DOTNETVERSION}}
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{env.DOTNETVERSION}}
+
+      - name: Install MAUI Workloads
+        run: |
+          dotnet workload install maccatalyst --ignore-failed-sources
+          dotnet workload install maui --ignore-failed-sources
+      - name: Restore Dependencies
+        run: dotnet restore JboxWebdav.MauiApp/JboxWebdav.MauiApp.csproj
+
+      - name: Build MAUI MacCatalyst
+        run: dotnet build JboxWebdav.MauiApp/JboxWebdav.MauiApp.csproj -c ${{env.BUILDTYPE}} -f net6.0-maccatalyst /p:CreatePackage=true
+
+      - name: Upload MacCatalyst Artifact
+        uses: actions/upload-artifact@v2.3.1
+        with:
+          name: macos-ci-build
+          path: JboxWebdav.MauiApp/bin/${{env.BUILDTYPE}}/net6.0-maccatalyst/**/*.app
