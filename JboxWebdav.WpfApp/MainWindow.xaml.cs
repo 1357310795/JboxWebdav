@@ -111,6 +111,9 @@ namespace JboxWebdav.WpfApp
         private void SaveSettings()
         {
             IniHelper.SetKeyValue("WpfApp", "IpAddress", IpAddress, IniHelper.inipath);
+            IniHelper.SetKeyValue("WpfApp", "JboxPublicEnabled", JboxPublicEnabled.ToString(), IniHelper.inipath);
+            IniHelper.SetKeyValue("WpfApp", "JboxSharedEnabled", JboxSharedEnabled.ToString(), IniHelper.inipath);
+            IniHelper.SetKeyValue("WpfApp", "AccessMode", AccessMode.Type.ToString(), IniHelper.inipath);
         }
         #endregion
 

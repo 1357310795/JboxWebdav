@@ -27,7 +27,8 @@ namespace JboxWebdav.MauiApp.Services
 
         public bool SetKeyValue(string Section, string Key, string Value)
         {
-            Task.Run(async () => { await SecureStorage.Default.SetAsync($"{Section}_{Key}", Value); });
+            var task = Task.Run(async () => { await SecureStorage.Default.SetAsync($"{Section}_{Key}", Value); });
+            task.Wait();
             return true;
         }
     }

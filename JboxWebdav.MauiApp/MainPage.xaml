@@ -3,7 +3,8 @@
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:converters="clr-namespace:JboxWebdav.MauiApp.Converters"
-             Title="JboxWebdav - v0.1-preview" Loaded="ContentPage_Loaded">
+             Title="JboxWebdav - v0.1-preview"
+             Unloaded="ContentPage_Unloaded" Loaded="ContentPage_Loaded">
     <ContentPage.Resources>
         <converters:IsRunningToColorConverter x:Key="IsRunningToColorConverter" />
     </ContentPage.Resources>
@@ -44,6 +45,25 @@
                    Text="{Binding WebdavMessage}"
                    HorizontalOptions="Center" TextColor="Red"
                    FontSize="14" />
+            <VerticalStackLayout Margin="10,5">
+                <HorizontalStackLayout>
+                    <CheckBox IsChecked="{Binding JboxPublicEnabled}" VerticalOptions="Center" />
+                    <Label Text="启用“交大空间”" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+                <HorizontalStackLayout>
+                    <CheckBox IsChecked="{Binding JboxSharedEnabled}" VerticalOptions="Center" />
+                    <Label Text="启用“他人的分享链接”" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+                <HorizontalStackLayout>
+                    <Label Text="权限设定：" VerticalOptions="Center" />
+                    <Picker MinimumWidthRequest="150"
+                            ItemsSource="{Binding AccessModes}"
+                            SelectedItem="{Binding AccessMode}"
+                            ItemDisplayBinding="{Binding Display}"
+                            VerticalOptions="Center" />
+                </HorizontalStackLayout>
+                <Button HorizontalOptions="Center" Padding="10" Text="保存设置" Clicked="ButtonSave_Click"/>
+            </VerticalStackLayout>
         </VerticalStackLayout>
     </Grid>
 
