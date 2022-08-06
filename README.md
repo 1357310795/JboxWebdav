@@ -1,10 +1,10 @@
 ![JboxWebdav.png](https://s2.loli.net/2022/08/06/vk5BiwMhYL6l41U.png)
 <p align="center">
-  <img align="center" src="https://img.shields.io/github/downloads/1357310795/JboxWebdav/total" /> 
   <img align="center" src="https://img.shields.io/github/license/1357310795/JboxWebdav" /> 
   <img align="center" src="https://img.shields.io/github/forks/1357310795/JboxWebdav" /> 
   <img align="center" src="https://img.shields.io/github/stars/1357310795/JboxWebdav" /> 
   <img align="center" src="https://img.shields.io/github/v/release/1357310795/JboxWebdav?include_prereleases" /> 
+  <img align="center" src="https://img.shields.io/github/downloads/1357310795/JboxWebdav/total" />
   <img align="center" src="https://img.shields.io/github/deployments/1357310795/JboxWebdav/github-pages?label=Docs%20Build" /> 
 </p>
 

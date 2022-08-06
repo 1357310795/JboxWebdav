@@ -31,6 +31,7 @@ lang: zh-CN
 Potplayer（Windows） | 完美支持
 MPC-BE（Windows） | 完美支持
 MX player（Android） | 完美支持
+系统自带的 ZuneVideo（Windows） | 不支持
 
 ### 图片
 
@@ -44,7 +45,7 @@ MX player（Android） | 完美支持
 
 软件     | 兼容性
 -------- | -----
-2345好压 | 有很大问题
+2345好压 | 不支持
 360压缩 | 完美支持
 Windows 资源管理器 | 完美支持
 7-zip | 完美支持
