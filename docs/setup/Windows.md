@@ -20,7 +20,7 @@ JboxWebdav 提供多种应用程序框架，以达到跨平台支持。以下是
 如果你知道什么是.NET 6.0运行时，并且明确计算机中已经安装，可以跳过这一步。
 :::
 
-2. 在[Releases](https://github.com/1357310795/JboxWebdav/releases)下载 JboxWebdav 的可执行文件（请选择以 **WpfApp-Windows** 结尾的项目）。
+2. 在[Releases](https://github.com/1357310795/JboxWebdav/releases)下载 JboxWebdav 的可执行文件（请选择包含 **WpfApp-Windows** 的条目）。
 3. 直接运行程序。
 4. 若未处于交大内网环境，程序会提示连接交大 VPN，连接好后继续。
 
@@ -40,7 +40,7 @@ JboxWebdav 提供多种应用程序框架，以达到跨平台支持。以下是
 
 ## 使用 MAUI 框架
 ### 安装步骤
-1. 在[Releases](https://github.com/1357310795/JboxWebdav/releases)下载 JboxWebdav 的可执行文件（请选择以 **MauiApp-Windows** 结尾的项目）。
+1. 在[Releases](https://github.com/1357310795/JboxWebdav/releases)下载 JboxWebdav 的可执行文件（请选择包含 **MauiApp-Windows** 的条目）。
 2. 解压压缩包
 
 ![](https://s2.loli.net/2022/08/01/a6TCM1QZJBI8sNR.png)
@@ -69,7 +69,7 @@ JboxWebdav 提供多种应用程序框架，以达到跨平台支持。以下是
 如果你知道什么是.NET 6.0运行时，并且明确计算机中已经安装，可以跳过这一步。
 :::
 
-2. 在[Releases](https://github.com/1357310795/JboxWebdav/releases)下载JboxWebdav的可执行文件（请选择以 **ConsoleApp-Windows** 结尾的项目）。
+2. 在[Releases](https://github.com/1357310795/JboxWebdav/releases)下载JboxWebdav的可执行文件（请选择包含 **ConsoleApp-Windows** 的条目）。
 3. 直接运行程序。
 4. 根据提示登录后，服务自动运行。
 

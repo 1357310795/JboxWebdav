@@ -16,7 +16,7 @@ JboxWebdav 提供多种应用程序框架，以达到跨平台支持。以下是
 
 ## 使用 MAUI 框架
 ### 安装步骤
-1. 在[Releases](https://github.com/1357310795/JboxWebdav/releases)下载 JboxWebdav 的安装包文件（请选择以 **MauiApp-Android** 结尾的项目）。
+1. 在[Releases](https://github.com/1357310795/JboxWebdav/releases)下载 JboxWebdav 的安装包文件（请选择包含 **MauiApp-Android** 的条目）。
 2. 使用 Android 程序包管理器安装（若提示类似“未知来源应用”，按提示操作即可）。
 3. 启动应用。
 4. 根据提示登录后，点击“启动”按钮运行Webdav服务。
