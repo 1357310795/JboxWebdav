@@ -235,7 +235,7 @@ namespace Jbox.Service
                 Dictionary<string, string> dic = Common.ParseQueryString(url3);
 
                 dic.Add("user", jaccount);
-                dic.Add("pass", password);
+                dic.Add("pass", password.UrlEncode());
                 dic.Add("captcha", captcharesult.result);
                 dic.Add("v", "");
                 dic.Add("uuid", uuid);
