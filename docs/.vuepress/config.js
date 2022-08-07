@@ -77,6 +77,7 @@ function getTipSidebar() {
             '',
             'JboxShared',
             'JboxPublic',
+            'Config'
         ]
     }]
 };
