@@ -9,8 +9,10 @@ using Jbox.Service;
 using NWebDav.Server.Helpers;
 using System.Text;
 using JboxWebdav.Server.Jbox;
+using YamlDotNet.Serialization.NamingConventions;
+using YamlDotNet.Serialization;
 
-namespace NWebDav.Sample.HttpListener
+namespace JboxWebdav.ConsoleApp
 {
     internal class Program
     {
@@ -74,7 +76,9 @@ namespace NWebDav.Sample.HttpListener
             LoggerFactory.Factory = new ConsoleAdapter();
             Address = "http://127.0.0.1:65472/";
 
-            while(true)
+            ReadConfig(args);
+
+            while (true)
             {
                 using (var httpListener = new System.Net.HttpListener())
                 {
@@ -259,5 +263,45 @@ namespace NWebDav.Sample.HttpListener
                 }
             }
         }
+
+        private static void ReadConfig(string[] args)
+        {
+            if (args.Length < 2 || args[0] != "-c")
+                return;
+            var ymlfile = args[1];
+            try
+            {
+                var yml = File.ReadAllText(ymlfile);
+                var deserializer = new DeserializerBuilder()
+                                        .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                                        .Build();
+
+                var c = deserializer.Deserialize<YamlConfig>(yml);
+                Program.Address = c.Address;
+                Config.SharedEnabled = c.IsSharedEnabled;
+                Config.PublicEnabled = c.IsPublicEnabled;
+                Dictionary<AccessModeEnum, int> AccessModes = new Dictionary<AccessModeEnum, int>();
+                AccessModes.Add(AccessModeEnum.Full, 1023);
+                AccessModes.Add(AccessModeEnum.ReadOnly, 5);
+                AccessModes.Add(AccessModeEnum.ReadWrite, 39);
+                AccessModes.Add(AccessModeEnum.NoDelete, 1023 - 64);
+                var e = Enum.Parse<AccessModeEnum>(c.AccessMode);
+                if (e != null)
+                    Config.AccessMode = AccessModes[e];
+                Console.WriteLine($"配置文件读取成功！");
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"配置文件读取失败：{ex.Message}");
+            }
+        }
+    }
+    
+    public class YamlConfig
+    {
+        public string Address { get; set; }
+        public bool IsPublicEnabled { get; set; }
+        public bool IsSharedEnabled { get; set; }
+        public string AccessMode { get; set; }
     }
 }

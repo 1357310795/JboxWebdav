@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="YamlDotNet" Version="12.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\JboxWebdav.Server.HttpListener\JboxWebdav.Server.HttpListener.csproj" />
     <ProjectReference Include="..\JboxWebdav.Server\JboxWebdav.Server.csproj" />
   </ItemGroup>
