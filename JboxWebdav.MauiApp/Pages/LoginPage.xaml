@@ -17,7 +17,7 @@
                            WidthRequest="28" Source="account.png"
                            VerticalOptions="Center" />
                     <Entry Text="{Binding Account}"
-                           WidthRequest="300" Placeholder="Jaccount账号"
+                           WidthRequest="300" Placeholder="jAccount账号"
                            VerticalOptions="Center"
                            FontSize="16" />
                 </HorizontalStackLayout>
@@ -27,7 +27,7 @@
                            WidthRequest="28" Source="key.png"
                            VerticalOptions="Center" />
                     <Entry WidthRequest="300" ClearButtonVisibility="WhileEditing"
-                           IsPassword="True" Placeholder="Jaccount密码"
+                           IsPassword="True" Placeholder="jAccount密码"
                            VerticalOptions="Center"
                            Text="{Binding Password}"
                            FontSize="16" />

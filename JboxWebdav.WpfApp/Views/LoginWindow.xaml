@@ -33,8 +33,8 @@
                              Text="{Binding Account}"
                              Style="{StaticResource MaterialDesignFloatingHintTextBox}"
                              materialDesign:HintAssist.FloatingScale="0.70"
-                             materialDesign:HintAssist.Hint="Jaccount账号"
-                             FontSize="16" />
+                             materialDesign:HintAssist.Hint="jAccount账号"
+                             FontSize="16" Cursor="Arrow" />
                 </StackPanel>
                 <StackPanel HorizontalAlignment="Center"
                             Margin="0,10,0,0"
@@ -49,7 +49,7 @@
                                  ext:PassWordExtensions.PassWord="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  KeyUp="PasswordBox_KeyUp"
                                  materialDesign:HintAssist.FloatingScale="0.70"
-                                 materialDesign:HintAssist.Hint="Jaccount密码" Cursor="IBeam"
+                                 materialDesign:HintAssist.Hint="jAccount密码" Cursor="IBeam"
                                  FontSize="16">
                         <i:Interaction.Behaviors>
                             <ext:PasswordBehavior />

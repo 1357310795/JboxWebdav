@@ -164,9 +164,9 @@ namespace NWebDav.Sample.HttpListener
             Console.WriteLine("Cookie登录失败，请使用账号密码重新登录。");
             while (true)
             {
-                Console.Write("Jaccount账号：");
+                Console.Write("jAccount账号：");
                 var account = Console.ReadLine();
-                Console.Write("Jaccount密码：");
+                Console.Write("jAccount密码：");
                 var password = ReadPassword();
                 var res1 = Jac.Login(account, password);
                 if (res1.state == Jac.LoginState.success)
