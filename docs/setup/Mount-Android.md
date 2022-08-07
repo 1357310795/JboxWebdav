@@ -5,7 +5,7 @@ lang: zh-CN
 
 # Android 访问 Webdav 服务器
 ::: tip 提示
-很多 Android 文件管理器都支持连接到 Webdav 服务器，此处使用 Mixplorer 演示。（应该是 Android **最**强文件管理器了）
+很多 Android 文件管理器都支持连接到 WebDAV 服务器，此处使用 Mixplorer 演示。（应该是 Android **最**强文件管理器了）
 :::
 
 ## 操作步骤

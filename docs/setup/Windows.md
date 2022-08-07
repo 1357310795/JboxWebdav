@@ -26,11 +26,11 @@ JboxWebdav 提供多种应用程序框架，以达到跨平台支持。以下是
 
 ![](https://s2.loli.net/2022/08/01/7bi1gGhDj2EIwXm.png)
 
-5. 登录 Jaccount（安全性问题见[这里](../about/readme.md#安全性说明)）
+5. 登录 jAccount（安全性问题见[这里](../about/readme.md#安全性说明)）
 
 ![](https://s2.loli.net/2022/07/03/YXpRmdWC1QHSMrz.png)
 
-6. 直接点击“启动”按钮运行 Webdav 服务。
+6. 直接点击“启动”按钮运行 WebDAV 服务。
 
 ![](https://s2.loli.net/2022/08/01/YujkUPdKIiXfbAT.png)
 
@@ -51,11 +51,11 @@ JboxWebdav 提供多种应用程序框架，以达到跨平台支持。以下是
 
 ![](https://s2.loli.net/2022/08/01/KjLmOkc2FSVM94s.png)
 
-5. 登录Jaccount（安全性问题见[这里](../about/readme.md#安全性说明)）
+5. 登录 jAccount（安全性问题见[这里](../about/readme.md#安全性说明)）
 
 ![](https://s2.loli.net/2022/08/01/q9zWCLYDGoHAPMt.png)
 
-6. 直接点击“运行”按钮运行Webdav服务。
+6. 直接点击“运行”按钮运行 WebDAV 服务。
 
 ![](https://s2.loli.net/2022/08/01/LTnyPaBmrdpOjHR.png)
 
@@ -69,7 +69,7 @@ JboxWebdav 提供多种应用程序框架，以达到跨平台支持。以下是
 如果你知道什么是.NET 6.0运行时，并且明确计算机中已经安装，可以跳过这一步。
 :::
 
-2. 在[Releases](https://github.com/1357310795/JboxWebdav/releases)下载JboxWebdav的可执行文件（请选择包含 **ConsoleApp-Windows** 的条目）。
+2. 在[Releases](https://github.com/1357310795/JboxWebdav/releases)下载 JboxWebdav 的可执行文件（请选择包含 **ConsoleApp-Windows** 的条目）。
 3. 直接运行程序。
 4. 根据提示登录后，服务自动运行。
 

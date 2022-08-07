@@ -20,4 +20,4 @@ lang: zh-CN
 
 ## 外部链接
 - 在 [Github](https://github.com/1357310795/JboxWebdav) 获取本项目的简介和源代码，或者发布新的issue或pull request
-<!-- - 在 [水源社区](https://shuiyuan.sjtu.edu.cn/) 尽情讨论关于本项目的任何话题 -->
+- 在 [水源社区](https://shuiyuan.sjtu.edu.cn/t/topic/81456/) 尽情讨论关于本项目的任何话题

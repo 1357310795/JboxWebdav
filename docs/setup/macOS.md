@@ -15,7 +15,7 @@ JboxWebdav 提供多种应用程序框架，以达到跨平台支持。以下是
 ### 安装步骤
 1. [点击这里](https://dotnet.microsoft.com/zh-cn/download/dotnet/6.0/runtime)下载安装.NET 6.0运行时框架。先切换到“macOS”选项卡，点击“运行应用”下的“下载x64”按钮以下载安装包。下载完成后运行，根据向导进行安装。
 
-2. 在[Releases](https://github.com/1357310795/JboxWebdav/releases)下载JboxWebdav的可执行文件（请选择包含 **ConsoleApp-macOS** 的条目）。
+2. 在[Releases](https://github.com/1357310795/JboxWebdav/releases)下载 JboxWebdav 的可执行文件（请选择包含 **ConsoleApp-macOS** 的条目）。
 3. 解压缩。
 4. 在文件夹内运行终端，输入命令`./JboxWebdav.ConsoleApp`运行程序。
 5. 根据提示登录后，服务自动运行。
@@ -26,7 +26,7 @@ JboxWebdav 提供多种应用程序框架，以达到跨平台支持。以下是
 
 ## 使用 MAUI 框架
 ### 安装步骤
-1. 在[Releases](https://github.com/1357310795/JboxWebdav/releases)下载JboxWebdav的可执行文件（请选择包含 **MauiApp-macOS** 的条目）。
+1. 在[Releases](https://github.com/1357310795/JboxWebdav/releases)下载 JboxWebdav 的可执行文件（请选择包含 **MauiApp-macOS** 的条目）。
 2. 双击解压缩。
 3. 使用“右键——打开”运行程序
 4. 根据提示登录后，点击“运行”按钮运行Webdav服务。

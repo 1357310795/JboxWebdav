@@ -3,7 +3,7 @@ title: 使用 Raidrive
 lang: zh-CN
 ---
 
-# 使用 Raidrive 将 Webdav 服务器映射为网络磁盘<Badge text="推荐" type="tip"/>
+# 使用 Raidrive 将 WebDAV 服务器映射为网络磁盘<Badge text="推荐" type="tip"/>
 
 ::: warning 注意
 Raidrive 仅支持 Windows 系统
@@ -27,7 +27,7 @@ Raidrive 仅支持 Windows 系统
 5. 点击确定，然后点击连接。
 ![](https://s2.loli.net/2022/08/01/pnL6Y2zPcmXFxOk.png)
 
-6. 在“此电脑”可以看到由 Jbox 映射的网络磁盘。
+6. 在“此电脑”可以看到由 jBox 映射的网络磁盘。
 ![](https://s2.loli.net/2022/08/01/Et5hmrYgKReUslX.png)
 
 接下来，或许您还想阅读[使用](../tip/)章节

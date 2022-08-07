@@ -47,7 +47,7 @@ sudo apt-get install -y dotnet-runtime-6.0
 sudo dnf install dotnet-runtime-5.0
 ```
 
-2. 在[Releases](https://github.com/1357310795/JboxWebdav/releases)下载JboxWebdav的可执行文件（请选择包含 **ConsoleApp-Linux** 的条目）。
+2. 在[Releases](https://github.com/1357310795/JboxWebdav/releases)下载 JboxWebdav 的可执行文件（请选择包含 **ConsoleApp-Linux** 的条目）。
 3. 解压，在文件夹内启动终端
 4. 使用命令`JboxWebdav.ConsoleApp`运行程序。
 5. 根据提示登录后，服务自动运行。

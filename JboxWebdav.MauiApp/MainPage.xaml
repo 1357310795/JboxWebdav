@@ -15,7 +15,7 @@
                          HorizontalOptions="Start"
                          Fill="{Binding IsWebdavRunning, Converter={StaticResource IsRunningToColorConverter}}" />
                 <Label Margin="15,2"
-                       Text="Webdav服务"
+                       Text="WebDAV服务"
                        FontAttributes="Bold"
                        FontSize="20" />
             </Grid>

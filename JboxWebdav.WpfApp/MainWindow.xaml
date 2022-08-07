@@ -21,7 +21,7 @@
                          HorizontalAlignment="Left"
                          Fill="{Binding IsWebdavRunning, Converter={StaticResource IsRunningToColorConverter}}" />
                 <TextBlock Margin="15,2"
-                           Text="Webdav服务"
+                           Text="WebDAV服务"
                            FontWeight="Bold"
                            FontSize="20" />
             </Grid>
