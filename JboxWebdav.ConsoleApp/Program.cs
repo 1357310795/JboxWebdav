@@ -62,7 +62,7 @@ namespace JboxWebdav.ConsoleApp
             }
             catch (Exception ex)
             {
-                s_log.Log(LogLevel.Error, () => ex.Message);
+                s_log.Log(LogLevel.Error, () => ex.ToString());
                 //Console.WriteLine(ex.Message);
                 //throw new ArgumentException(ex.Message);
             }

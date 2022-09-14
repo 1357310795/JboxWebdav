@@ -40,7 +40,7 @@ namespace JboxWebdav.Server.Jbox.Upload
 
         public CommonResult Run()
         {
-            Debug.WriteLine("Uploader Started!");
+            Console.WriteLine("Uploader Started!");
             taskCompletionSource = new TaskCompletionSource<CommonResult>();
             for(int i = 0; i < threadcount; i++)
             {
@@ -48,12 +48,12 @@ namespace JboxWebdav.Server.Jbox.Upload
             }
             taskCompletionSource.Task.Wait();
             var res1 = taskCompletionSource.Task.Result;
-            Debug.WriteLine($"Upload All Done, Result: {res1.success}");
+            Console.WriteLine($"Upload All Done, Result: {res1.success}");
             if (!res1.success)
                 return res1;
 
             var res2 = UploadFinal(targetPath, length);
-            Debug.WriteLine($"Upload Final Done, Result: {res2.success}");
+            Console.WriteLine($"Upload Final Done, Result: {res2.success}");
             if (!res2.success)
                 return res2;
             if (res2.code != System.Net.HttpStatusCode.OK)
@@ -75,7 +75,7 @@ namespace JboxWebdav.Server.Jbox.Upload
             {
                 runningcount++;
                 current++;
-                Debug.WriteLine($"Task Chunk {current} Assigned");
+                Console.WriteLine($"Task Chunk {current} Assigned");
                 BackgroundWorker bgw = new BackgroundWorker();
                 bgw.DoWork += Bgw_DoWork;
                 bgw.RunWorkerCompleted += Bgw_RunWorkerCompleted;
@@ -109,7 +109,7 @@ namespace JboxWebdav.Server.Jbox.Upload
         private void Bgw_RunWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e)
         {
             ChunkFileUploadTaskArgs args = (ChunkFileUploadTaskArgs)e.Result;
-            Debug.WriteLine($"Task Chunk {args.id} {(args.success ? "Succeeded" : "Failed")}");
+            Console.WriteLine($"Task Chunk {args.id} {(args.success ? "Succeeded" : "Failed")}");
             if (!args.success)
             {
                 taskCompletionSource.TrySetResult(new CommonResult(false, "上传失败"));
@@ -123,7 +123,7 @@ namespace JboxWebdav.Server.Jbox.Upload
         private void Bgw_DoWork(object? sender, DoWorkEventArgs e)
         {
             ChunkFileUploadTaskArgs args = (ChunkFileUploadTaskArgs)e.Argument;
-            Debug.WriteLine($"Task Chunk {args.id} Started");
+            Console.WriteLine($"Task Chunk {args.id} Started");
             while (args.retrytimes-- > 0)
             {
                 try
