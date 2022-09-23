@@ -1,16 +1,16 @@
-﻿using System.Net;
+﻿using Jbox.Service;
+using JboxWebdav.Server.Jbox;
+using NWebDav.Sample.HttpListener.LogAdapters;
 using NWebDav.Server;
+using NWebDav.Server.Helpers;
 using NWebDav.Server.Http;
 using NWebDav.Server.HttpListener;
 using NWebDav.Server.Logging;
 using NWebDav.Server.Stores;
-using NWebDav.Sample.HttpListener.LogAdapters;
-using Jbox.Service;
-using NWebDav.Server.Helpers;
+using System.Net;
 using System.Text;
-using JboxWebdav.Server.Jbox;
-using YamlDotNet.Serialization.NamingConventions;
 using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
 
 namespace JboxWebdav.ConsoleApp
 {
@@ -19,6 +19,7 @@ namespace JboxWebdav.ConsoleApp
         private static ILogger s_log = LoggerFactory.CreateLogger(typeof(Program));
         public static WebDavDispatcher webDavDispatcher;
         public static string Address;
+        public static bool nointeractive;
 
         private static async void DispatchHttpRequestsAsync(System.Net.HttpListener httpListener, CancellationToken cancellationToken)
         {
@@ -71,7 +72,7 @@ namespace JboxWebdav.ConsoleApp
         private static void Main(string[] args)
         {
             Console.WriteLine("Welcome to JboxWebdav!");
-            Login();
+            if (!Login()) Environment.Exit(-1);
 
             LoggerFactory.Factory = new ConsoleAdapter();
             Address = "http://127.0.0.1:65472/";
@@ -92,30 +93,36 @@ namespace JboxWebdav.ConsoleApp
 
                         DispatchHttpRequestsAsync(httpListener, cancellationTokenSource.Token);
 
-                        Console.WriteLine("WebDAV 服务器运行中。按下 x 退出，按下 c 进入设置。");
+                        Console.WriteLine($"WebDAV 服务器运行中。{(nointeractive ? "按下 x 退出，按下 c 进入设置。" : "")}");
                         Console.WriteLine($"监听地址：{Address}");
                     }
                     catch(Exception ex)
                     {
                         s_log.Log(LogLevel.Fatal, () => ex.Message);
                         Console.WriteLine("出现严重错误，请更改正确的监听地址、确保程序有相关权限，然后重启程序！");
+                        if (nointeractive)
+                            Environment.Exit(0);
                     }
                     
-
                     while (true)
                     {
-                        var key = Console.ReadKey();
-                        if (key.KeyChar == 'x')
+                        if (nointeractive)
+                            Thread.Sleep(200000);
+                        else
                         {
-                            cancellationTokenSource.Cancel();
-                            return;
-                        }
-                        if (key.KeyChar == 'c')
-                        {
-                            if (ChangeConfig())
+                            var key = Console.ReadKey();
+                            if (key.KeyChar == 'x')
                             {
                                 cancellationTokenSource.Cancel();
-                                break;
+                                return;
+                            }
+                            if (key.KeyChar == 'c')
+                            {
+                                if (ChangeConfig())
+                                {
+                                    cancellationTokenSource.Cancel();
+                                    break;
+                                }
                             }
                         }
                     }
@@ -123,7 +130,7 @@ namespace JboxWebdav.ConsoleApp
             }
         }
 
-        private static void Login()
+        private static bool Login()
         {
             Console.WriteLine("尝试登录...");
             var loginres = Jac.LoginState.success;
@@ -136,7 +143,7 @@ namespace JboxWebdav.ConsoleApp
                 {
                     Console.WriteLine("Cookie登录成功。");
                     loginres = Jac.LoginState.success;
-                    return;
+                    return true;
                 }
             }
             if (Jac.CheckVPN())
@@ -146,6 +153,12 @@ namespace JboxWebdav.ConsoleApp
 
             if (loginres == Jac.LoginState.novpn)
             {
+                if (nointeractive)
+                {
+                    Console.WriteLine("请先拨通交大VPN，然后按任意键继续！");
+                    loginres = Jac.LoginState.fail;
+                    return false;
+                }
                 while(true)
                 {
                     Console.WriteLine("请先拨通交大VPN，然后按任意键继续！");
@@ -160,12 +173,17 @@ namespace JboxWebdav.ConsoleApp
                     {
                         Console.WriteLine("Cookie登录成功。");
                         loginres = Jac.LoginState.success;
-                        return;
+                        return true;
                     }
                 }
             }
 
             Console.WriteLine("Cookie登录失败，请使用账号密码重新登录。");
+            if (nointeractive)
+            {
+                loginres = Jac.LoginState.fail;
+                return false;
+            }
             while (true)
             {
                 Console.Write("jAccount账号：");
@@ -183,6 +201,7 @@ namespace JboxWebdav.ConsoleApp
                     Console.WriteLine(res1.message);
                 }
             }
+            return true;
         }
 
         private static string ReadPassword()
@@ -266,6 +285,7 @@ namespace JboxWebdav.ConsoleApp
 
         private static void ReadConfig(string[] args)
         {
+            nointeractive = args.Any(x => x == "-no-interactive");
             if (args.Length < 2 || args[0] != "-c")
                 return;
             var ymlfile = args[1];
