@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>配置开机启动（Linux） | JboxWebdav 说明文档</title>
+    <meta name="generator" content="VuePress 1.9.7">
+    
+    <meta name="description" content="Just playing around">
+    
+    <link rel="preload" href="/JboxWebdav/assets/css/0.styles.b9ee31e6.css" as="style"><link rel="preload" href="/JboxWebdav/assets/js/app.8a1a8d50.js" as="script"><link rel="preload" href="/JboxWebdav/assets/js/2.f72d9393.js" as="script"><link rel="preload" href="/JboxWebdav/assets/js/20.93dec060.js" as="script"><link rel="prefetch" href="/JboxWebdav/assets/js/10.e75990e9.js"><link rel="prefetch" href="/JboxWebdav/assets/js/11.310b96ce.js"><link rel="prefetch" href="/JboxWebdav/assets/js/12.36e1cf94.js"><link rel="prefetch" href="/JboxWebdav/assets/js/13.87c7f0cd.js"><link rel="prefetch" href="/JboxWebdav/assets/js/14.30aea199.js"><link rel="prefetch" href="/JboxWebdav/assets/js/15.60cff9aa.js"><link rel="prefetch" href="/JboxWebdav/assets/js/16.4709cca2.js"><link rel="prefetch" href="/JboxWebdav/assets/js/17.56729a85.js"><link rel="prefetch" href="/JboxWebdav/assets/js/18.b817d2a0.js"><link rel="prefetch" href="/JboxWebdav/assets/js/19.50acb362.js"><link rel="prefetch" href="/JboxWebdav/assets/js/21.6da0d5ed.js"><link rel="prefetch" href="/JboxWebdav/assets/js/22.5f7836aa.js"><link rel="prefetch" href="/JboxWebdav/assets/js/23.f4b47dc7.js"><link rel="prefetch" href="/JboxWebdav/assets/js/24.67d4d8e2.js"><link rel="prefetch" href="/JboxWebdav/assets/js/3.e2f1e3af.js"><link rel="prefetch" href="/JboxWebdav/assets/js/4.0cf0b3b5.js"><link rel="prefetch" href="/JboxWebdav/assets/js/5.0559d5c3.js"><link rel="prefetch" href="/JboxWebdav/assets/js/6.45c573e9.js"><link rel="prefetch" href="/JboxWebdav/assets/js/7.6d5512ae.js"><link rel="prefetch" href="/JboxWebdav/assets/js/8.7dade3b4.js"><link rel="prefetch" href="/JboxWebdav/assets/js/9.b21765a2.js">
+    <link rel="stylesheet" href="/JboxWebdav/assets/css/0.styles.b9ee31e6.css">
+  </head>
+  <body>
+    <div id="app" data-server-rendered="true"><div class="theme-container"><header class="navbar"><div class="sidebar-button"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" viewBox="0 0 448 512" class="icon"><path fill="currentColor" d="M436 124H12c-6.627 0-12-5.373-12-12V80c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12z"></path></svg></div> <a href="/JboxWebdav/" class="home-link router-link-active"><!----> <span class="site-name">JboxWebdav 说明文档</span></a> <div class="links"><div class="search-box"><input aria-label="Search" autocomplete="off" spellcheck="false" value=""> <!----></div> <nav class="nav-links can-hide"><div class="nav-item"><a href="/JboxWebdav/start/" class="nav-link">
+  开始
+</a></div><div class="nav-item"><div class="dropdown-wrapper"><button type="button" aria-label="下载安装" class="dropdown-title"><span class="title">下载安装</span> <span class="arrow down"></span></button> <button type="button" aria-label="下载安装" class="mobile-dropdown-title"><span class="title">下载安装</span> <span class="arrow right"></span></button> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><!----> <a href="/JboxWebdav/setup/Windows.html" class="nav-link">
+  Windows
+</a></li><li class="dropdown-item"><!----> <a href="/JboxWebdav/setup/macOS.html" class="nav-link">
+  macOS
+</a></li><li class="dropdown-item"><!----> <a href="/JboxWebdav/setup/Linux.html" class="nav-link">
+  Linux
+</a></li><li class="dropdown-item"><!----> <a href="/JboxWebdav/setup/Android.html" class="nav-link">
+  Android
+</a></li><li class="dropdown-item"><!----> <a href="/JboxWebdav/setup/iOS.html" class="nav-link">
+  iOS
+</a></li><li class="dropdown-item"><!----> <a href="/JboxWebdav/setup/Other.html" class="nav-link">
+  Other
+</a></li></ul></div></div><div class="nav-item"><a href="/JboxWebdav/tip/" class="nav-link router-link-active">
+  使用
+</a></div><div class="nav-item"><a href="/JboxWebdav/about/" class="nav-link">
+  关于
+</a></div><div class="nav-item"><a href="https://github.com/1357310795/JboxWebdav" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  Github
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div> <!----></nav></div></header> <div class="sidebar-mask"></div> <aside class="sidebar"><nav class="nav-links"><div class="nav-item"><a href="/JboxWebdav/start/" class="nav-link">
+  开始
+</a></div><div class="nav-item"><div class="dropdown-wrapper"><button type="button" aria-label="下载安装" class="dropdown-title"><span class="title">下载安装</span> <span class="arrow down"></span></button> <button type="button" aria-label="下载安装" class="mobile-dropdown-title"><span class="title">下载安装</span> <span class="arrow right"></span></button> <ul class="nav-dropdown" style="display:none;"><li class="dropdown-item"><!----> <a href="/JboxWebdav/setup/Windows.html" class="nav-link">
+  Windows
+</a></li><li class="dropdown-item"><!----> <a href="/JboxWebdav/setup/macOS.html" class="nav-link">
+  macOS
+</a></li><li class="dropdown-item"><!----> <a href="/JboxWebdav/setup/Linux.html" class="nav-link">
+  Linux
+</a></li><li class="dropdown-item"><!----> <a href="/JboxWebdav/setup/Android.html" class="nav-link">
+  Android
+</a></li><li class="dropdown-item"><!----> <a href="/JboxWebdav/setup/iOS.html" class="nav-link">
+  iOS
+</a></li><li class="dropdown-item"><!----> <a href="/JboxWebdav/setup/Other.html" class="nav-link">
+  Other
+</a></li></ul></div></div><div class="nav-item"><a href="/JboxWebdav/tip/" class="nav-link router-link-active">
+  使用
+</a></div><div class="nav-item"><a href="/JboxWebdav/about/" class="nav-link">
+  关于
+</a></div><div class="nav-item"><a href="https://github.com/1357310795/JboxWebdav" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  Github
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div> <!----></nav>  <ul class="sidebar-links"><li><section class="sidebar-group depth-0"><p class="sidebar-heading open"><span>使用指南</span> <!----></p> <ul class="sidebar-links sidebar-group-items"><li><a href="/JboxWebdav/tip/" aria-current="page" class="sidebar-link">使用总则</a></li><li><a href="/JboxWebdav/tip/JboxShared.html" class="sidebar-link">使用“他人的分享链接”功能</a></li><li><a href="/JboxWebdav/tip/JboxPublic.html" class="sidebar-link">使用“交大空间”功能</a></li><li><a href="/JboxWebdav/tip/Config.html" class="sidebar-link">使用 YAML 配置文件</a></li><li><a href="/JboxWebdav/tip/AutoStart.html" aria-current="page" class="active sidebar-link">配置开机启动（Linux）</a><ul class="sidebar-sub-headers"><li class="sidebar-sub-header"><a href="/JboxWebdav/tip/AutoStart.html#linux-使用-systemd-user-配置开机启动" class="sidebar-link">Linux 使用 systemd user 配置开机启动</a></li></ul></li></ul></section></li></ul> </aside> <main class="page"> <div class="theme-default-content content__default"><h2 id="linux-使用-systemd-user-配置开机启动"><a href="#linux-使用-systemd-user-配置开机启动" class="header-anchor">#</a> Linux 使用 systemd user 配置开机启动</h2> <ol><li>在 systemd 用户目录 <code>/home/xxx/.config/systemd/user/</code> 中创建 <code>jboxwebdav.service</code> 文件：</li></ol> <div class="language-jboxwebdav.service line-numbers-mode"><pre class="language-text"><code>[Unit]
+Description = WebDAV Sercive for jBox
+After=network-online.target
+Wants=network-online.target systemd-networkd-wait-online.service
+
+[Service]
+Type = simple
+ExecStart = sh /home/xxx/.config/systemd/user/jbox-startup.sh
+
+[Install]
+WantedBy = default.target
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br><span class="line-number">9</span><br><span class="line-number">10</span><br><span class="line-number">11</span><br></div></div><ol start="2"><li>在 systemd 用户目录：<code>/home/xxx/.config/systemd/user/</code> 中创建启动脚本 <code>jbox-startup.sh</code>：</li></ol> <div class="language-bash line-numbers-mode"><pre class="language-bash"><code><span class="token builtin class-name">cd</span> /path_to_your_location/JboxWebdav.ConsoleApp-Linux-x64 <span class="token operator">&amp;&amp;</span>  ./JboxWebdav.ConsoleApp  -no-interactive  -c config.yml
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br></div></div><p>其中<br> <code>-no-interactive</code> 必选，非交互模式，否则会导致报错无法启动
+<code>-c config.yml</code> 可选，自定义配置，详见 <a href="/JboxWebdav/tip/Config.html">使用 YAML 配置文件初始化设置</a></p> <ol start="3"><li>启动服务/设置开机启动</li></ol> <div class="language-bash line-numbers-mode"><pre class="language-bash"><code><span class="token comment"># 重载守护进程，读取 jbox-startup.service 文件</span>
+systemctl --user daemon-reload
+<span class="token comment"># 启动服务状态</span>
+systemctl --user start jboxwebdav
+<span class="token comment"># 查看服务状态，可以此命令查看报错日志</span>
+systemctl --user status jboxwebdav
+<span class="token comment"># 开机启动 jboxwebdav 服务</span>
+systemctl --user <span class="token builtin class-name">enable</span> jboxwebdav
+</code></pre> <div class="line-numbers-wrapper"><span class="line-number">1</span><br><span class="line-number">2</span><br><span class="line-number">3</span><br><span class="line-number">4</span><br><span class="line-number">5</span><br><span class="line-number">6</span><br><span class="line-number">7</span><br><span class="line-number">8</span><br></div></div></div> <footer class="page-edit"><!----> <!----></footer> <div class="page-nav"><p class="inner"><span class="prev">
+      ←
+      <a href="/JboxWebdav/tip/Config.html" class="prev">
+        使用 YAML 配置文件
+      </a></span> <!----></p></div> </main></div><div class="global-ui"></div></div>
+    <script src="/JboxWebdav/assets/js/app.8a1a8d50.js" defer></script><script src="/JboxWebdav/assets/js/2.f72d9393.js" defer></script><script src="/JboxWebdav/assets/js/20.93dec060.js" defer></script>
+  </body>
+</html>
