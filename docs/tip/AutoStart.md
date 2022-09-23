@@ -13,7 +13,6 @@ Wants=network-online.target systemd-networkd-wait-online.service
 [Service]
 Type = simple
 ExecStart = sh /home/xxx/.config/systemd/user/jbox-startup.sh
-Restart=always
 
 [Install]
 WantedBy = default.target
