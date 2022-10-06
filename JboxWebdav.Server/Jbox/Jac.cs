@@ -474,6 +474,8 @@ namespace Jbox.Service
                 if (result.code != HttpStatusCode.OK)
                     return false;
                 userInfo = JsonConvert.DeserializeObject<JboxUserInfo>(result.result);
+                if (userInfo.Type?.ToLower() == "error")
+                    return false;
                 islogin = true;
 
                 #region 获取Public Key

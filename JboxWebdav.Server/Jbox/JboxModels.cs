@@ -296,6 +296,9 @@ namespace JboxWebdav.Server.Jbox
         [JsonProperty("status")]
         public long Status { get; set; }
 
+        [JsonProperty("type")]
+        public string? Type { get; set; }
+
         [JsonProperty("uid")]
         public long Uid { get; set; }
 
