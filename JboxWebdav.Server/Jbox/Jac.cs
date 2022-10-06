@@ -357,6 +357,7 @@ namespace Jbox.Service
             Jac.TryLastCookie(account);
             if (!Jac.islogin)
             {
+                dic.Clear();
                 Jac.LoginResult res = new Jac.LoginResult();
                 int i = 0;
                 do
@@ -474,6 +475,8 @@ namespace Jbox.Service
                 if (result.code != HttpStatusCode.OK)
                     return false;
                 userInfo = JsonConvert.DeserializeObject<JboxUserInfo>(result.result);
+                if (userInfo.Type?.ToLower() == "error")
+                    return false;
                 islogin = true;
 
                 #region 获取Public Key
