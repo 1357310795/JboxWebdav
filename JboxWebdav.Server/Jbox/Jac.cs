@@ -357,6 +357,7 @@ namespace Jbox.Service
             Jac.TryLastCookie(account);
             if (!Jac.islogin)
             {
+                dic.Clear();
                 Jac.LoginResult res = new Jac.LoginResult();
                 int i = 0;
                 do
