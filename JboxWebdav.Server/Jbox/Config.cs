@@ -13,7 +13,7 @@ namespace JboxWebdav.Server.Jbox
         public static bool SharedEnabled { get; set; } = true;
         public static bool PublicEnabled { get; set; } = true;
 
-        public static string AppDataDir { get; set; } = Environment.GetEnvironmentVariable("LocalAppData") + "\\JboxWebdav\\";
+        public static string AppDataDir { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "JboxWebdav");
 
         public static int AccessMode { get; set; } = 1023;
 
