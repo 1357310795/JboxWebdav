@@ -33,6 +33,7 @@ namespace JboxWebdav.Server.Jbox.JboxShared
         public static void Save()
         {
             var filepath = Path.Combine(Config.AppDataDir, "JboxSharedModels.json");
+            Directory.CreateDirectory(Config.AppDataDir);
             File.WriteAllText(filepath, JsonConvert.SerializeObject(items));
         }
 
