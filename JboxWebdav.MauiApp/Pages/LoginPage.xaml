@@ -2,7 +2,7 @@
 <ContentPage x:Class="JboxWebdav.MauiApp.Pages.LoginPage"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             Title="JboxWebdav - v0.1-preview">
+             Title="JboxWebdav - v0.12">
     <Grid x:Name="MainGrid">
         <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center">
             <Label Margin="0,-20,0,0"

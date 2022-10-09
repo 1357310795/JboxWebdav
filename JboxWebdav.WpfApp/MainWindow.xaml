@@ -6,7 +6,7 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:local="clr-namespace:JboxWebdav.WpfApp"
         xmlns:converters="clr-namespace:JboxWebdav.WpfApp.Converters"
-        Title="JboxWebdav - v0.1" Closed="Window_Closed"
+        Title="JboxWebdav - v0.12" Closed="Window_Closed"
         Width="400" Height="400" StateChanged="Window_StateChanged"
         Icon="/Resources/jbox-webdav.ico" Loaded="Window_Loaded"
         WindowStartupLocation="CenterScreen"

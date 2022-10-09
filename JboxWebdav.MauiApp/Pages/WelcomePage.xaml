@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="JboxWebdav.MauiApp.Pages.WelcomePage"
-             Title="JboxWebdav - v0.1-preview">
+             Title="JboxWebdav - v0.12">
     <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center">
         <Image WidthRequest="200" Source="jbox_webdav.png" HorizontalOptions="Center" VerticalOptions="Center" />
         <Label 

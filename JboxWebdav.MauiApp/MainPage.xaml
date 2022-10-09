@@ -3,7 +3,7 @@
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:converters="clr-namespace:JboxWebdav.MauiApp.Converters"
-             Title="JboxWebdav - v0.1-preview"
+             Title="JboxWebdav - v0.12"
              Unloaded="ContentPage_Unloaded" Loaded="ContentPage_Loaded">
     <ContentPage.Resources>
         <converters:IsRunningToColorConverter x:Key="IsRunningToColorConverter" />
