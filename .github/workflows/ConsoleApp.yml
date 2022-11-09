@@ -25,7 +25,7 @@ jobs:
           dotnet build JboxWebdav.ConsoleApp/JboxWebdav.ConsoleApp.csproj -c Release -f net6.0 --no-restore
 
       - name: Build for macOS
-        if: matrix.os == 'macos-12'
+        if: matrix.os == 'macos'
         run: |
           dotnet restore JboxWebdav.ConsoleApp/JboxWebdav.ConsoleApp.csproj
           dotnet build JboxWebdav.ConsoleApp/JboxWebdav.ConsoleApp.csproj -c Release -f net6.0 --no-restore
