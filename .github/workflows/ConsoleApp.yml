@@ -22,19 +22,22 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           dotnet restore JboxWebdav.ConsoleApp/JboxWebdav.ConsoleApp.csproj
-          dotnet build JboxWebdav.ConsoleApp/JboxWebdav.ConsoleApp.csproj -c Release -f net6.0 --no-restore
+          dotnet build JboxWebdav.ConsoleApp/JboxWebdav.ConsoleApp.csproj -c Release -f net6.0 --no-restore -a x64
+          dotnet build JboxWebdav.ConsoleApp/JboxWebdav.ConsoleApp.csproj -c Release -f net6.0 --no-restore -a arm64
 
       - name: Build for macOS
         if: matrix.os == 'macos-12'
         run: |
           dotnet restore JboxWebdav.ConsoleApp/JboxWebdav.ConsoleApp.csproj
-          dotnet build JboxWebdav.ConsoleApp/JboxWebdav.ConsoleApp.csproj -c Release -f net6.0 --no-restore
-      
+          dotnet build JboxWebdav.ConsoleApp/JboxWebdav.ConsoleApp.csproj -c Release -f net6.0 --no-restore -a x64
+          dotnet build JboxWebdav.ConsoleApp/JboxWebdav.ConsoleApp.csproj -c Release -f net6.0 --no-restore -a arm64
+
       - name: Build for Linux
         if: matrix.os == 'ubuntu-latest'
         run: |
           dotnet restore JboxWebdav.ConsoleApp/JboxWebdav.ConsoleApp.csproj
-          dotnet build JboxWebdav.ConsoleApp/JboxWebdav.ConsoleApp.csproj -c Release -f net6.0 --no-restore
+          dotnet build JboxWebdav.ConsoleApp/JboxWebdav.ConsoleApp.csproj -c Release -f net6.0 --no-restore -a x64
+          dotnet build JboxWebdav.ConsoleApp/JboxWebdav.ConsoleApp.csproj -c Release -f net6.0 --no-restore -a arm64
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v3.1.0
