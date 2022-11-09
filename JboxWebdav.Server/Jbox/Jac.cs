@@ -1,7 +1,6 @@
 ﻿using Jbox.Models;
 using JboxWebdav.Server.Jbox;
 using Newtonsoft.Json;
-using SixLabors.ImageSharp.Processing;
 using System.Net;
 using System.Security.Principal;
 using System.Text;
@@ -126,16 +125,16 @@ namespace Jbox.Service
                 Stream streamcaptcha = resp4.GetResponseStream();
                 #endregion
 
-                #region 4.5. Captcha-Resize
-                Stream outputstream = new MemoryStream();
-                using (var image = SixLabors.ImageSharp.Image.Load(streamcaptcha))
-                {
-                    image.Mutate(x => x.Resize(100, 40));
-                    image.Save(outputstream, new SixLabors.ImageSharp.Formats.Png.PngEncoder());
+                //#region 4.5. Captcha-Resize
+                //Stream outputstream = new MemoryStream();
+                //using (var image = SixLabors.ImageSharp.Image.Load(streamcaptcha))
+                //{
+                //    image.Mutate(x => x.Resize(100, 40));
+                //    image.Save(outputstream, new SixLabors.ImageSharp.Formats.Png.PngEncoder());
                     
-                }
-                outputstream.Position = 0;
-                #endregion
+                //}
+                //outputstream.Position = 0;
+                //#endregion
 
                 #region 5. /captcha-solver
                 HttpWebRequest request_captcha = (HttpWebRequest)WebRequest.Create("https://plus.sjtu.edu.cn/captcha-solver/");
@@ -176,7 +175,7 @@ namespace Jbox.Service
                 postStream.Write(formdataBytes, 0, formdataBytes.Length);
 
                 //写入文件内容
-                using (var stream = outputstream)
+                using (var stream = streamcaptcha)
                 {
                     byte[] buffer = new byte[1024];
                     int bytesRead = 0;
@@ -406,6 +405,30 @@ namespace Jbox.Service
             return islogin;
         }
 
+
+        public static CommonResult ClearCookie()
+        {
+            try
+            {
+                if (!File.Exists(Path.Combine(configpath, "cookie.json")))
+                    return new CommonResult(true, "操作成功！");
+                StreamReader sr = new StreamReader(Path.Combine(configpath, "cookie.json"));
+                while (!sr.EndOfStream)
+                {
+                    var key = sr.ReadLine();
+                    if (File.Exists(Path.Combine(configpath, key + ".json")))
+                        File.Delete(Path.Combine(configpath, key + ".json"));
+                }
+                sr.Close();
+                File.Delete(Path.Combine(configpath, "cookie.json"));
+                return new CommonResult(true, "操作成功！");
+            }
+            catch(Exception ex) 
+            {
+                return new CommonResult(false, ex.Message);
+            }
+        }
+
         //public static void ReadInfo()
         //{
         //    var cookies = storage.GetKeyValue("cookies", "list", "");
@@ -433,17 +456,27 @@ namespace Jbox.Service
         //}
         public static void ReadInfo()
         {
-            if (!File.Exists(Path.Combine(configpath,"cookie.json")))
-                return;
-            StreamReader sr = new StreamReader(Path.Combine(configpath, "cookie.json"));
-            while (!sr.EndOfStream)
+            try
             {
-                var key = sr.ReadLine();
-                var jsonstr = File.ReadAllText(Path.Combine(configpath, key + ".json"));
-                var json = JsonConvert.DeserializeObject<JboxCookie>(jsonstr);
-                dic.Add(key, json);
+                if (!File.Exists(Path.Combine(configpath, "cookie.json")))
+                    return;
+                StreamReader sr = new StreamReader(Path.Combine(configpath, "cookie.json"));
+                while (!sr.EndOfStream)
+                {
+                    var key = sr.ReadLine();
+                    if (File.Exists(Path.Combine(configpath, key + ".json")))
+                    {
+                        var jsonstr = File.ReadAllText(Path.Combine(configpath, key + ".json"));
+                        var json = JsonConvert.DeserializeObject<JboxCookie>(jsonstr);
+                        dic.Add(key, json);
+                    }
+                }
+                sr.Close();
             }
-            sr.Close();
+            catch (Exception ex)
+            {
+
+            }
         }
 
         public static void SaveInfo()
@@ -519,6 +552,7 @@ namespace Jbox.Service
             req.Headers["Accept-Encoding"] = "gzip, deflate, br";
             req.Headers["Accept-Language"] = "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7";
         }
+
 
         public class captcharesult
         {

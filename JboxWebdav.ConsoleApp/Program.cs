@@ -93,7 +93,7 @@ namespace JboxWebdav.ConsoleApp
 
                         DispatchHttpRequestsAsync(httpListener, cancellationTokenSource.Token);
 
-                        Console.WriteLine($"WebDAV 服务器运行中。{(nointeractive ? "按下 x 退出，按下 c 进入设置。" : "")}");
+                        Console.WriteLine($"WebDAV 服务器运行中。{(!nointeractive ? "按下 x 退出，按下 c 进入设置。" : "")}");
                         Console.WriteLine($"监听地址：{Address}");
                     }
                     catch(Exception ex)
@@ -249,7 +249,8 @@ namespace JboxWebdav.ConsoleApp
                 Console.WriteLine($"1.更改监听地址（当前：{Address}）");
                 Console.WriteLine($"2.停用/启用“交大空间”（当前：{(Config.PublicEnabled ? "已启用" : "未启用")}）");
                 Console.WriteLine($"3.停用/启用“他人的分享链接”（当前：{(Config.SharedEnabled ? "已启用" : "未启用")}）");
-                Console.Write("请输入数字1~3更改设置，留空退出 > ");
+                Console.WriteLine($"4.清除登录数据并退出程序");
+                Console.Write("请输入数字 1~4 更改设置，留空退出设置 > ");
                 var line = Console.ReadLine();
                 switch(line)
                 {
@@ -278,6 +279,10 @@ namespace JboxWebdav.ConsoleApp
                     case "3":
                         Config.SharedEnabled = !Config.SharedEnabled;
                         //changed = true;
+                        break;
+                    case "4":
+                        Jac.ClearCookie();
+                        Environment.Exit(0);
                         break;
                 }
             }
