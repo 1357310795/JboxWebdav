@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using System.Net;
 using System.Security.Principal;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Jbox.Service
 {
@@ -117,21 +118,43 @@ namespace Jbox.Service
                 #endregion
 
                 #region 4. /jaccount/captcha
-                HttpWebRequest req4 = (HttpWebRequest)WebRequest.Create("https://jaccount.sjtu.edu.cn/jaccount/captcha?uuid=" + uuid + "&t=" + Common.GetTimeStamp());
+                HttpWebRequest req4 = (HttpWebRequest)WebRequest.Create("https://jaccount.sjtu.edu.cn/jaccount/captcha?uuid=" + uuid + "&t=" + Common.GetTimeStampMilli());
                 req4.CookieContainer = cc;
                 AddCommonHeaders(req4);
-
+                req4.Accept = "image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8";
+                req4.Referer = url3;
                 HttpWebResponse resp4 = (HttpWebResponse)req4.GetResponse();
                 Stream streamcaptcha = resp4.GetResponseStream();
                 #endregion
 
+                #region 4.5 POST /jaccount/captcha
+                HttpWebRequest req45 = (HttpWebRequest)WebRequest.Create("https://jaccount.sjtu.edu.cn/jaccount/captcha");
+                req45.CookieContainer = cc;
+                AddCommonHeaders(req45);
+                req45.Method = "POST";
+                req45.Accept = "application/json, text/javascript, */*; q=0.01";
+                req45.Referer = url3;
+                byte[] data45 = Encoding.Default.GetBytes($"uuid={uuid}&g-recaptcha-response=");
+                req45.ContentLength = data45.Length;
+                using (Stream reqStream = req45.GetRequestStream())
+                {
+                    reqStream.Write(data45, 0, data45.Length);
+                    reqStream.Close();
+                }
+                HttpWebResponse resp45 = (HttpWebResponse)req45.GetResponse();
+
+                if (resp45.StatusCode != HttpStatusCode.OK)
+                {
+                    return new LoginResult(LoginState.fail, "POST /jaccount/captcha 失败");
+                }
+                #endregion
                 //#region 4.5. Captcha-Resize
                 //Stream outputstream = new MemoryStream();
                 //using (var image = SixLabors.ImageSharp.Image.Load(streamcaptcha))
                 //{
                 //    image.Mutate(x => x.Resize(100, 40));
                 //    image.Save(outputstream, new SixLabors.ImageSharp.Formats.Png.PngEncoder());
-                    
+
                 //}
                 //outputstream.Position = 0;
                 //#endregion
